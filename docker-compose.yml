@@ -1,0 +1,9 @@
+services:
+  neosys-local-generator:
+    build: .
+    container_name: neosys-local-generator
+    ports:
+      - "0.0.0.0:1516:1516"
+    environment:
+      - PORT=1516
+    restart: unless-stopped

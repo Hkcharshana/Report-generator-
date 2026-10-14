@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NeoSys Laboratory Report</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<section id="loginScreen" class="login-screen">
+    <div class="liquid-bg">
+      <div class="liquid-orb orb-1"></div>
+      <div class="liquid-orb orb-2"></div>
+      <div class="liquid-orb orb-3"></div>
+      <div class="ambient-glow glow-1"></div>
+      <div class="ambient-glow glow-2"></div>
+    </div>
+
+    <button class="login-theme-toggle" id="loginThemeBtn" type="button" aria-label="Toggle dark / light mode">🌙 Dark / Light</button>
+
+    <div class="login-card" aria-labelledby="loginTitle">
+      <div class="login-brand-header">
+        <div class="login-logo-badge">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+        </div>
+        <div class="login-brand-text">
+          <span class="login-brand-name">NeoSys <strong>Medicare</strong></span>
+          <span class="login-brand-dept">Medical Laboratory System</span>
+        </div>
+      </div>
+
+      <div class="login-header-text">
+        <h1 id="loginTitle">Welcome Back</h1>
+        <p>Sign in to sync patient records and generate automated laboratory reports.</p>
+      </div>
+
+      <div id="loginError" class="login-error" hidden></div>
+
+      <form id="loginForm" novalidate>
+        <div class="login-field">
+          <label for="loginUser">NeoSys Username</label>
+          <div class="login-input-wrap">
+            <span class="input-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </span>
+            <input id="loginUser" type="text" autocomplete="username" placeholder="e.g. Chathura" required>
+          </div>
+        </div>
+
+        <div class="login-field">
+          <label for="loginPass">Password</label>
+          <div class="login-input-wrap">
+            <span class="input-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </span>
+            <input id="loginPass" type="password" autocomplete="current-password" placeholder="Enter password" required>
+            <button class="eye-btn" id="loginEyeBtn" type="button" aria-label="Show password">
+              <svg id="eyeIconShow" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg id="eyeIconHide" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="login-row">
+          <label class="remember-label"><input type="checkbox" id="loginRemember" checked> Keep me signed in</label>
+          <span class="login-secure-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> 256-bit SSL</span>
+        </div>
+
+        <button class="btn primary login-submit-btn" type="submit" id="loginBtn">
+          <span>Sign In to NeoSys</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </form>
+
+      <div class="login-divider">
+        <span>OR</span>
+      </div>
+
+      <button type="button" id="offlineLoginBtn" class="offline-pill-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        <span>Launch Local / Offline Generator</span>
+      </button>
+
+      <p class="login-msg" id="loginMsg" role="status" aria-live="polite"></p>
+
+      <div class="login-card-footer">
+        <span class="security-indicator">🔒 Direct automated connection to NeoSys.lk portal</span>
+      </div>
+    </div>
+  </section>
+
+  <div id="appShell" class="app-shell" hidden>
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">N</div>
+        <div>
+          <strong>NeoSys</strong>
+          <span>Medicare Lab</span>
+        </div>
+      </div>
+      <nav>
+        <a class="active" href="#search">⌕ Find Patient</a>
+        <a href="#test">◈ Select Test</a>
+        <a href="#preview">▣ Preview Report</a>
+      </nav>
+      <div class="side-note">
+        <b>Automated Workflow</b><br>
+        Search Reference or Passport No &rarr; Patient info and lab values auto-fill &rarr; Preview and download.
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="ambient-glow glow-1"></div>
+      <div class="ambient-glow glow-2"></div>
+      <div class="ambient-glow glow-3"></div>
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">NEOSYS MEDICARE · LABORATORY</p>
+          <h1>Laboratory Report</h1>
+          <p class="sub">Find Patient &rarr; Auto-loaded details &amp; lab results &rarr; A4 Report download</p>
+        </div>
+        <div class="topbar-actions">
+          <span id="connStatus" class="conn-badge offline">🟡 Local Mode</span>
+          <button class="btn secondary" id="clearAll">Clear</button>
+        </div>
+      </header>
+
+      <div id="toast" class="toast"></div>
+
+      <section class="card search-card" id="search">
+        <div class="card-head">
+          <div>
+            <span class="step">01</span>
+            <h2>Find Patient</h2>
+          </div>
+          <span class="tag">Live NeoSys Auto-Fetch</span>
+        </div>
+        <div class="search-row">
+          <input id="refSearch" placeholder="Enter Reference No or Passport No (e.g. MRD26/04451 or 04444)" autocomplete="off">
+          <button class="btn primary" id="searchBtn">Search patient</button>
+        </div>
+        <p class="hint">Patient summary fields and lab results (FBS, RBS, Cholesterol, SGPT, SGOT, Creatinine, etc.) are fetched automatically.</p>
+        <div id="liveChoices" class="live-choices" hidden></div>
+        <details class="bridge-help">
+          <summary>Alternative: Connect via Browser Bridge</summary>
+          <ol>
+            <li>Open <a href="https://neosys.lk/sys/medical-lab" target="_blank" rel="noreferrer">NeoSys Medical Lab</a> in another tab and log in.</li>
+            <li>On that page, open browser DevTools Console and paste the copied bridge script.</li>
+            <li>Click Search patient here.</li>
+          </ol>
+          <button class="btn secondary" id="copyBridge">Copy bridge script</button>
+          <span id="copyStatus"></span>
+        </details>
+      </section>
+
+      <section class="card" id="patient">
+        <div class="card-head">
+          <div>
+            <span class="step">02</span>
+            <h2>Patient details</h2>
+          </div>
+          <span class="loaded-badge" id="loadedBadge">Waiting for search</span>
+        </div>
+        <div class="summary-grid">
+          <div>
+            <label>Ref. No</label>
+            <strong data-show="ref_no">—</strong>
+          </div>
+          <div>
+            <label>PP/NIC No</label>
+            <strong data-show="passport_no">—</strong>
+          </div>
+          <div class="wide">
+            <label>Name</label>
+            <strong data-show="fname">—</strong>
+          </div>
+          <div>
+            <label>Age</label>
+            <strong data-show="age">—</strong>
+          </div>
+          <div>
+            <label>Sex</label>
+            <strong data-show="gender">—</strong>
+          </div>
+          <div class="wide">
+            <label>Referred By</label>
+            <strong data-show="agency">—</strong>
+          </div>
+          <div>
+            <label>Date</label>
+            <strong data-show="medical_date">—</strong>
+          </div>
+          <div>
+            <label>Specimen</label>
+            <strong data-show="specimen">—</strong>
+          </div>
+          <div>
+            <label>Issued Time</label>
+            <strong data-show="report_time">—</strong>
+          </div>
+        </div>
+
+        <details id="extraPatientDetails" class="patient-extra" hidden>
+          <summary>📋 View Full NeoSys Record &amp; Lab Data</summary>
+          <div id="extraPatientContent" class="extra-content"></div>
+        </details>
+      </section>
+
+      <form id="reportForm">
+        <input type="hidden" name="ref_no">
+        <input type="hidden" name="passport_no">
+        <input type="hidden" name="fname">
+        <input type="hidden" name="age">
+        <input type="hidden" name="gender">
+        <input type="hidden" name="agency">
+        <input type="hidden" name="medical_date">
+        <input type="hidden" name="specimen">
+        <input type="hidden" name="report_time">
+        <input type="hidden" name="test_method" value="Erba Mannheim Fully Auto Analyzer">
+        <input type="hidden" name="result_note" value="[Repeated and Confirmed]">
+        <input type="hidden" name="reference_range">
+        <input type="hidden" name="unit">
+
+        <section class="card" id="test">
+          <div class="card-head">
+            <div>
+              <span class="step">03</span>
+              <h2>Select test and enter result</h2>
+            </div>
+            <span class="tag teal">Auto-filled from NeoSys</span>
+          </div>
+          <div class="test-grid">
+            <div class="field">
+              <label for="test_name">Test</label>
+              <select id="test_name" name="test_name">
+                <option value="">Select a test</option>
+                <option>FBS</option>
+                <option>RBS</option>
+                <option>Total Cholesterol</option>
+                <option>SGPT</option>
+                <option>SGOT</option>
+                <option>SGPT &amp; SGOT</option>
+                <option>Lipid Profile</option>
+                <option>Total Bilirubine</option>
+                <option>Serum Creatine</option>
+                <option>Urine Full Report</option>
+                <option>Haemoglobin A1C</option>
+              </select>
+            </div>
+            <div class="field" id="regularResultField">
+              <label for="test_result">Result</label>
+              <textarea id="test_result" name="test_result" rows="3" placeholder="Enter result, e.g. 98"></textarea>
+              <div id="splitResults" class="split-results" hidden>
+                <div class="field">
+                  <label for="sgpt_result">SGPT Result</label>
+                  <input id="sgpt_result" name="sgpt_result" placeholder="Enter SGPT result">
+                </div>
+                <div class="field">
+                  <label for="sgot_result">SGOT Result</label>
+                  <input id="sgot_result" name="sgot_result" placeholder="Enter SGOT result">
+                </div>
+              </div>
+              <div id="lipidResults" class="split-results lipid-inputs" hidden>
+                <div class="field">
+                  <label for="lipid_total">Total Cholesterol</label>
+                  <input id="lipid_total" name="lipid_total" placeholder="mg/dl">
+                </div>
+                <div class="field">
+                  <label for="lipid_triglyceride">Triglyceride</label>
+                  <input id="lipid_triglyceride" name="lipid_triglyceride" placeholder="mg/dl">
+                </div>
+                <div class="field">
+                  <label for="lipid_hdl">HDL-Cholesterol</label>
+                  <input id="lipid_hdl" name="lipid_hdl" placeholder="mg/dl (optional)">
+                </div>
+              </div>
+            </div>
+            <div class="field" id="unitField">
+              <label for="unit_display">Unit</label>
+              <input id="unit_display" value="—" readonly>
+            </div>
+            <div class="field" id="referenceRangeField">
+              <label for="reference_range">Reference Range</label>
+              <input id="reference_range" name="reference_range" readonly>
+            </div>
+          </div>
+
+          <div id="urineResults" class="urine-inputs" hidden>
+            <div class="ufr-toolbar">
+              <div class="ufr-toolbar-info">
+                <h4>Urine Full Report (UFR) Parameters</h4>
+                <p>Standard normal values are auto-filled below. You can change any parameter, or click 'Reset Normal Defaults'.</p>
+              </div>
+              <button type="button" class="btn secondary ufr-reset-btn" id="resetUfrBtn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                Reset Normal Defaults
+              </button>
+            </div>
+
+            <div class="ufr-section">
+              <div class="ufr-section-title">
+                <span>General / Chemical Examination</span>
+              </div>
+              <div class="ufr-grid">
+                <div class="field">
+                  <label for="ufr_colour">Colour</label>
+                  <input id="ufr_colour" name="ufr_colour" value="Pale Yellow">
+                </div>
+                <div class="field">
+                  <label for="ufr_appearance">Appearance</label>
+                  <input id="ufr_appearance" name="ufr_appearance" value="Clear">
+                </div>
+                <div class="field">
+                  <label for="ufr_specific_gravity">Specific Gravity</label>
+                  <input id="ufr_specific_gravity" name="ufr_specific_gravity" value="1.015">
+                </div>
+                <div class="field">
+                  <label for="ufr_ph">pH</label>
+                  <input id="ufr_ph" name="ufr_ph" value="6.0">
+                </div>
+                <div class="field">
+                  <label for="ufr_glucose">Glucose</label>
+                  <input id="ufr_glucose" name="ufr_glucose" value="Nil">
+                </div>
+                <div class="field">
+                  <label for="ufr_protein">Protein (Albumin)</label>
+                  <input id="ufr_protein" name="ufr_protein" value="Nil">
+                </div>
+                <div class="field">
+                  <label for="ufr_ketone">Ketone Bodies</label>
+                  <input id="ufr_ketone" name="ufr_ketone" value="Nil">
+                </div>
+                <div class="field">
+                  <label for="ufr_bilirubin">Bilirubin</label>
+                  <input id="ufr_bilirubin" name="ufr_bilirubin" value="Nil">
+                </div>
+                <div class="field">
+                  <label for="ufr_urobilinogen">Urobilinogen</label>
+                  <input id="ufr_urobilinogen" name="ufr_urobilinogen" value="+ Normal">
+                </div>
+              </div>
+            </div>
+
+            <div class="ufr-section">
+              <div class="ufr-section-title">
+                <span>Centrifuged Urine Microscopy</span>
+              </div>
+              <div class="ufr-grid">
+                <div class="field">
+                  <label for="ufr_pus_cells">Pus Cells</label>
+                  <input id="ufr_pus_cells" name="ufr_pus_cells" value="+ 01 - 02 /hpf">
+                </div>
+                <div class="field">
+                  <label for="ufr_red_cells">Red Cells</label>
+                  <input id="ufr_red_cells" name="ufr_red_cells" value="Nil">
+                </div>
+                <div class="field">
+                  <label for="ufr_epithelial_cells">Epithelial Cells</label>
+                  <input id="ufr_epithelial_cells" name="ufr_epithelial_cells" value="+  A Few   /hpf">
+                </div>
+                <div class="field">
+                  <label for="ufr_organisms">Organisms</label>
+                  <input id="ufr_organisms" name="ufr_organisms" value="Nil">
+                </div>
+                <div class="field">
+                  <label for="ufr_crystals">Crystals</label>
+                  <input id="ufr_crystals" name="ufr_crystals" value="Nil">
+                </div>
+                <div class="field">
+                  <label for="ufr_casts">Casts</label>
+                  <input id="ufr_casts" name="ufr_casts" value="Nil">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="hba1cResults" class="hba1c-inputs" hidden>
+            <div class="hba1c-toolbar">
+              <div class="hba1c-toolbar-info">
+                <h4>Haemoglobin A1C (HbA1c) Result</h4>
+                <p>Standard normal value is <strong>5.3%</strong>. You can enter any result value below, or click 'Reset Normal (5.3%)'.</p>
+              </div>
+              <button type="button" class="btn secondary hba1c-reset-btn" id="resetHba1cBtn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                Reset Normal (5.3%)
+              </button>
+            </div>
+
+            <div class="hba1c-card-body">
+              <div class="field hba1c-field">
+                <label for="hba1c_result_input">HbA1c Result (Default: 5.3%)</label>
+                <div class="hba1c-input-wrap">
+                  <input id="hba1c_result_input" name="hba1c_result" value="5.3%" placeholder="e.g. 5.3%" autocomplete="off">
+                  <span class="hba1c-percent-badge">%</span>
+                </div>
+              </div>
+
+              <div class="hba1c-ref-box">
+                <div class="hba1c-ref-title">Reference Ranges (Diagnostic Guide)</div>
+                <div class="hba1c-ref-list">
+                  <div class="hba1c-ref-row normal"><span>Below 6.0%</span><em>Normal</em></div>
+                  <div class="hba1c-ref-row warning"><span>6.0% to 6.4%</span><em>Prediabetes</em></div>
+                  <div class="hba1c-ref-row danger"><span>6.5% or above</span><em>Diabetes</em></div>
+                  <div class="hba1c-ref-row info"><span>&lt;7.0%</span><em>Goal of Therapy (Adults)</em></div>
+                  <div class="hba1c-ref-row alert"><span>&gt;8.0%</span><em>Action Suggested (Adults)</em></div>
+                </div>
+                <div class="hba1c-device-tag">
+                  <strong>Analyzer:</strong> HemoCue® HbA1c 501 &nbsp;|&nbsp; <strong>Method:</strong> Fluorescence Immunoassay (FIA)
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="field method">
+            <label>Test Method</label>
+            <input value="Erba Mannheim Fully Auto Analyzer" readonly>
+          </div>
+        </section>
+      </form>
+
+      <section class="card preview-card" id="preview">
+        <div class="card-head">
+          <div>
+            <span class="step">04</span>
+            <h2>Report preview</h2>
+          </div>
+          <div class="preview-actions">
+            <button class="btn pdf" id="pdfBtn">Download PDF</button>
+            <button class="btn pdf-plain" id="pdfPlainBtn" title="Download report without letterhead artwork (for pre-printed paper)">Download PDF (No Letterhead)</button>
+            <button class="btn print-plain" id="printPlainBtn" title="Print report without letterhead artwork (for pre-printed paper)">🖨️ Print (No Letterhead)</button>
+            <button class="btn excel" id="excelBtn">Download Excel</button>
+          </div>
+        </div>
+        <div id="previewEmpty" class="empty">
+          Search a patient and select a test to view the report preview.
+        </div>
+        <div id="reportPreview" class="report-paper" hidden>
+          <div class="paper-title">Laboratory Report</div>
+          <div class="paper-meta">
+            <div>
+              <p><b>Ref. No</b><span>:</span><em data-preview="ref_no">—</em></p>
+              <p><b>Name</b><span>:</span><em data-preview="fname">—</em></p>
+              <p><b>Sex</b><span>:</span><em data-preview="gender">—</em></p>
+              <p><b>Date</b><span>:</span><em data-preview="medical_date">—</em></p>
+              <p><b>Issued Time</b><span>:</span><em data-preview="report_time">—</em></p>
+            </div>
+            <div>
+              <p><b>PP/NIC No</b><span>:</span><em data-preview="passport_no">—</em></p>
+              <p><b>Age</b><span>:</span><em data-preview="age">—</em></p>
+              <p><b>Referred By</b><span>:</span><em data-preview="agency">—</em></p>
+              <p><b>Specimen</b><span>:</span><em data-preview="specimen">—</em></p>
+            </div>
+          </div>
+          <h3 data-preview="test_name">Test</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Test</th>
+                <th>Result</th>
+                <th id="previewRefHead">Reference Range</th>
+              </tr>
+            </thead>
+            <tbody id="previewBody">
+              <tr><td>—</td><td>—</td><td>—</td></tr>
+            </tbody>
+          </table>
+          <div id="previewReference" class="preview-reference"></div>
+          <p id="previewConfirm" class="confirm">[Repeated and Confirmed]</p>
+          <p class="method-line">[Test Method - Erba Mannheim Fully Auto Analyzer]</p>
+          <p class="end-report">**End of Report**</p>
+        </div>
+      </section>
+
+      <footer>
+        NeoSys Local Generator · Search, preview and download locally.<br>
+        <span class="copyright">Copyright © DareDevil Solution INC by Chathura Harshana Jr</span>
+      </footer>
+    </main>
+  </div>
+
+  <script src="app.js?v=20261014-sgpt-sgot-layout"></script>
+</body>
+</html>
