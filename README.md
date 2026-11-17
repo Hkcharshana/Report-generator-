@@ -138,3 +138,4 @@ The PDF now matches the preview: issued time is one text line, and the Test, Res
 ## Increased heading whitespace
 
 The whitespace below the Laboratory Report heading was increased by one additional row so the patient details and result section are visually separated while maintaining the A4 layout.
+"# Report-generator-" 
