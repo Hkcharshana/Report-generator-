@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "backend": "node backend/server.js"
   },
   "keywords": [],
   "author": "",
@@ -15,5 +16,16 @@
     "exceljs": "^4.4.0",
     "express": "^5.3.0",
     "pdf-lib": "^1.17.1"
-  }
+  },
+  "devDependencies": {
+    "electron": "^45.3.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hkcharshana/HRIS.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Hkcharshana/HRIS/issues"
+  },
+  "homepage": "https://github.com/Hkcharshana/HRIS#readme"
 }

@@ -12,8 +12,8 @@ RUN npm ci --omit=dev
 # Copy the rest of the application files
 COPY . .
 
-# Expose server port
-EXPOSE 1516
+# Expose server ports (Web App & H360 HL7)
+EXPOSE 1516 5600
 
 # Set default port environment variable
 ENV PORT=1516

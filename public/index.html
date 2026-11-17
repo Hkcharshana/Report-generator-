@@ -4,6 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>NeoSys Laboratory Report</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/developer-logo-transparent.png">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="shortcut icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="assets/developer-logo-transparent.png">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -16,7 +20,7 @@
       <div class="ambient-glow glow-2"></div>
     </div>
 
-    <button class="login-theme-toggle" id="loginThemeBtn" type="button" aria-label="Toggle dark / light mode">🌙 Dark / Light</button>
+    <button class="login-theme-toggle" id="loginThemeBtn" type="button" aria-label="Toggle dark / light mode"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg><span>Dark / Light</span></button>
 
     <div class="login-card" aria-labelledby="loginTitle">
       <div class="login-brand-header">
@@ -31,16 +35,28 @@
         </div>
       </div>
 
+      <!-- Branch Selector -->
+      <div class="branch-selector" id="branchSelector">
+        <button type="button" class="branch-tab active" id="branchPettah" onclick="selectBranch('pettah')">
+          <span class="b-tab-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M3 21h18M5 21V7l8-4v18M13 7l6 3v11"/><path d="M9 9v.01M9 13v.01M9 17v.01M17 13v.01M17 17v.01"/></svg></span>
+          <span>Pettah Branch</span>
+        </button>
+        <button type="button" class="branch-tab" id="branchColombo" onclick="selectBranch('colombo')">
+          <span class="b-tab-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M3 21h18M4 18h16M6 18v-7M10 18v-7M14 18v-7M18 18v-7M3 11l9-7 9 7M12 2v2"/></svg></span>
+          <span>Colombo Branch</span>
+        </button>
+      </div>
+
       <div class="login-header-text">
-        <h1 id="loginTitle">Welcome Back</h1>
-        <p>Sign in to sync patient records and generate automated laboratory reports.</p>
+        <h1 id="loginTitle">Sign In to Pettah</h1>
+        <p id="loginSubText">Sign in to sync Pettah patient records and generate automated laboratory reports.</p>
       </div>
 
       <div id="loginError" class="login-error" hidden></div>
 
       <form id="loginForm" novalidate>
         <div class="login-field">
-          <label for="loginUser">NeoSys Username</label>
+          <label for="loginUser" id="loginUserLabel">NeoSys Username</label>
           <div class="login-input-wrap">
             <span class="input-icon">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -69,24 +85,15 @@
         </div>
 
         <button class="btn primary login-submit-btn" type="submit" id="loginBtn">
-          <span>Sign In to NeoSys</span>
+          <span id="loginBtnText">Sign In to Pettah Branch</span>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </button>
       </form>
 
-      <div class="login-divider">
-        <span>OR</span>
-      </div>
-
-      <button type="button" id="offlineLoginBtn" class="offline-pill-btn">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-        <span>Launch Local / Offline Generator</span>
-      </button>
-
       <p class="login-msg" id="loginMsg" role="status" aria-live="polite"></p>
 
       <div class="login-card-footer">
-        <span class="security-indicator">🔒 Direct automated connection to NeoSys.lk portal</span>
+        <span class="security-indicator" id="securityIndicator"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>Direct automated connection to NeoSys.lk portal</span>
       </div>
     </div>
   </section>
@@ -101,13 +108,17 @@
         </div>
       </div>
       <nav>
-        <a class="active" href="#search">⌕ Find Patient</a>
-        <a href="#test">◈ Select Test</a>
-        <a href="#preview">▣ Preview Report</a>
+        <a class="active" href="#search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:7px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><span>Find Patient</span></a>
+        <a href="#shipping" id="navShipping"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:7px;"><path d="M2 21h20M2 17h20M4 17l2-10h12l2 10M12 7V3M9 3h6"/></svg><span>Shipping</span></a>
+        <a href="#test"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:7px;"><path d="M10 2v7.31L4 18.5A2 2 0 0 0 5.67 21h12.66A2 2 0 0 0 20 18.5L14 9.31V2"/><line x1="8.5" y1="2" x2="15.5" y2="2"/></svg><span>Select Test</span></a>
+        <a href="#dateChangePanel" id="navDateChange"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:7px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg><span>Date Change</span></a>
+        <a href="#preview"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:7px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>Preview Report</span></a>
       </nav>
-      <div class="side-note">
-        <b>Automated Workflow</b><br>
-        Search Reference or Passport No &rarr; Patient info and lab values auto-fill &rarr; Preview and download.
+      <div class="side-note side-copyright" style="text-align:center; padding:14px 12px; perspective:600px;">
+        <img src="assets/developer-logo-transparent.png" alt="DereDevil Solution" class="rotating-logo" style="width:54px; height:54px; object-fit:contain; margin-bottom:8px; display:inline-block; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.45));">
+        <div style="font-weight:700; color:#5eead4; font-size:12px; letter-spacing:0.3px;">DereDevil Solution INC</div>
+        <div style="color:#e2e8f0; font-size:11px; margin-top:2px; font-weight:500;">Chathura Harshana</div>
+        <div style="color:#94a3b8; font-size:10px; margin-top:4px;">&copy; All Rights Reserved</div>
       </div>
     </aside>
 
@@ -117,15 +128,43 @@
       <div class="ambient-glow glow-3"></div>
       <header class="topbar">
         <div>
-          <p class="eyebrow">NEOSYS MEDICARE · LABORATORY</p>
-          <h1>Laboratory Report</h1>
-          <p class="sub">Find Patient &rarr; Auto-loaded details &amp; lab results &rarr; A4 Report download</p>
+          <p class="eyebrow" id="topbarEyebrow">NEOSYS MEDICARE • PETTAH LABORATORY</p>
+          <h1 id="topbarTitle">Laboratory Report</h1>
+          <p class="sub" id="topbarSub">Find Patient &rarr; Auto-loaded details &amp; lab results &rarr; A4 Report download</p>
         </div>
         <div class="topbar-actions">
-          <span id="connStatus" class="conn-badge offline">🟡 Local Mode</span>
+          <div class="topbar-branch-switcher" id="topbarBranchSwitcher">
+            <button type="button" class="topbar-branch-btn active" id="tbBranchPettah" onclick="switchBranch('pettah')" title="Switch to Pettah Branch">
+              <span class="dot"></span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:3px;"><path d="M3 21h18M5 21V7l8-4v18M13 7l6 3v11"/><path d="M9 9v.01M9 13v.01M9 17v.01M17 13v.01M17 17v.01"/></svg><span>Pettah</span>
+            </button>
+            <button type="button" class="topbar-branch-btn" id="tbBranchColombo" onclick="switchBranch('colombo')" title="Switch to Colombo Branch">
+              <span class="dot"></span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:3px;"><path d="M3 21h18M4 18h16M6 18v-7M10 18v-7M14 18v-7M18 18v-7M3 11l9-7 9 7M12 2v2"/></svg><span>Colombo</span>
+            </button>
+          </div>
+          <a href="/admin" class="btn secondary super-admin-btn" id="superAdminBtn" title="Super Admin Security Console" style="text-decoration:none;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span>Super Admin</span>
+            <span id="superAdminDot" class="admin-status-dot" title="Normal security status"></span>
+          </a>
+          <span id="connStatus" class="conn-badge online"><span class="dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#16a34a;margin-right:6px;"></span>NeoSys Online</span>
+          <button class="btn secondary" id="logoutBtn" type="button" title="Log out and return to sign in screen"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:5px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg><span>Log Out</span></button>
           <button class="btn secondary" id="clearAll">Clear</button>
         </div>
       </header>
+
+      <!-- System Lockdown Banner -->
+      <div id="systemLockBanner" class="system-lock-banner" hidden>
+        <div class="lock-banner-inner">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div class="lock-banner-text" style="flex:1;">
+            <strong>EMERGENCY SECURITY LOCKDOWN ACTIVE:</strong>
+            <span id="systemLockBannerReason">Report generation is temporarily restricted by Super Admin.</span>
+          </div>
+          <a href="/admin" class="lock-banner-btn" id="lockBannerAdminBtn" style="text-decoration:none;">Admin Unlock</a>
+        </div>
+      </div>
 
       <div id="toast" class="toast"></div>
 
@@ -135,34 +174,79 @@
             <span class="step">01</span>
             <h2>Find Patient</h2>
           </div>
-          <span class="tag">Live NeoSys Auto-Fetch</span>
+          <span class="tag" id="searchBranchTag">Live NeoSys Pettah Auto-Fetch</span>
         </div>
         <div class="search-row">
-          <input id="refSearch" placeholder="Enter Reference No or Passport No (e.g. MRD26/04451 or 04444)" autocomplete="off">
+          <input id="refSearch" placeholder="Enter Reference No or Passport No (e.g. 04444)" autocomplete="off">
           <button class="btn primary" id="searchBtn">Search patient</button>
         </div>
-        <p class="hint">Patient summary fields and lab results (FBS, RBS, Cholesterol, SGPT, SGOT, Creatinine, etc.) are fetched automatically.</p>
+        <p class="hint" id="searchHint">Patient summary fields and lab results (FBS, RBS, Cholesterol, SGPT, SGOT, Creatinine, etc.) are fetched automatically from Pettah branch.</p>
         <div id="liveChoices" class="live-choices" hidden></div>
-        <details class="bridge-help">
-          <summary>Alternative: Connect via Browser Bridge</summary>
-          <ol>
-            <li>Open <a href="https://neosys.lk/sys/medical-lab" target="_blank" rel="noreferrer">NeoSys Medical Lab</a> in another tab and log in.</li>
-            <li>On that page, open browser DevTools Console and paste the copied bridge script.</li>
-            <li>Click Search patient here.</li>
-          </ol>
-          <button class="btn secondary" id="copyBridge">Copy bridge script</button>
-          <span id="copyStatus"></span>
-        </details>
       </section>
 
       <section class="card" id="patient">
-        <div class="card-head">
+        <div class="card-head" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
           <div>
             <span class="step">02</span>
             <h2>Patient details</h2>
           </div>
-          <span class="loaded-badge" id="loadedBadge">Waiting for search</span>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <div class="date-mode-pill-wrap" style="display:inline-flex; background:#f1f5f9; padding:3px; border-radius:24px; border:1px solid #cbd5e1;">
+              <button type="button" class="date-mode-pill active" id="btnModeSystemDate" style="border:none; background:#0d9488; color:#fff; font-size:12px; font-weight:600; padding:4px 12px; border-radius:20px; cursor:pointer; transition:all 0.2s;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:4px;"><polyline points="20 6 9 17 4 12"/></svg>
+                System Date
+              </button>
+              <button type="button" class="date-mode-pill" id="btnModeManualDate" style="border:none; background:transparent; color:#64748b; font-size:12px; font-weight:600; padding:4px 12px; border-radius:20px; cursor:pointer; transition:all 0.2s;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:4px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                Date Change (Manual)
+              </button>
+            </div>
+            <span class="loaded-badge" id="loadedBadge">Waiting for search</span>
+          </div>
         </div>
+
+        <!-- Date Change Control Panel (Shown when Date Change tab/mode is active) -->
+        <div id="dateChangePanel" class="date-change-panel" style="display:none; background:linear-gradient(135deg, #f0fdf4, #ecfdf5); border:1.5px solid #a7f3d0; border-radius:12px; padding:16px 18px; margin-bottom:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; border-radius:8px; background:#0d9488; color:#fff;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </span>
+              <div>
+                <strong style="color:#0f766e; font-size:14px; display:block;">Manual Date Modification Active (දිනය වෙනස් කිරීම)</strong>
+                <span style="font-size:11.5px; color:#047857;">Set any custom date for patient reports. Applies to Type 10 B, FBC, Excel &amp; PDF exports.</span>
+              </div>
+            </div>
+            <button type="button" class="btn secondary btn-xs" id="quickSelectType10bBtn" style="background:#0d9488; color:#fff; border:none; padding:7px 15px; border-radius:8px; font-weight:700; cursor:pointer;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:4px;"><polyline points="20 6 9 17 4 12"/></svg>
+              Select Type 10 B (with FBC &amp; DC)
+            </button>
+          </div>
+
+          <div style="display:grid; grid-template-columns:auto 1fr auto; gap:12px; align-items:center; background:#ffffff; border:1px solid #bbf7d0; padding:12px 14px; border-radius:8px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <label for="manualDatePicker" style="font-size:12px; font-weight:700; color:#0f766e; text-transform:uppercase;">Select Date:</label>
+              <input type="date" id="manualDatePicker" style="padding:6px 10px; border:1.5px solid #0d9488; border-radius:6px; font-size:13.5px; font-weight:700; color:#0f766e; outline:none;">
+            </div>
+
+            <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+              <span style="font-size:11.5px; color:#64748b; font-weight:600; margin-right:4px;">Quick Presets:</span>
+              <button type="button" class="btn secondary btn-xs date-preset-btn" data-days="0" style="padding:4px 10px; font-size:11.5px;">Today</button>
+              <button type="button" class="btn secondary btn-xs date-preset-btn" data-days="-1" style="padding:4px 10px; font-size:11.5px;">Yesterday (-1d)</button>
+              <button type="button" class="btn secondary btn-xs date-preset-btn" data-days="-2" style="padding:4px 10px; font-size:11.5px;">-2 Days</button>
+              <button type="button" class="btn secondary btn-xs date-preset-btn" data-days="-3" style="padding:4px 10px; font-size:11.5px;">-3 Days</button>
+              <button type="button" class="btn secondary btn-xs date-preset-btn" data-days="-7" style="padding:4px 10px; font-size:11.5px;">-1 Week</button>
+              <button type="button" class="btn secondary btn-xs" id="resetManualDateBtn" style="padding:4px 10px; font-size:11.5px; color:#b91c1c;">Reset to NeoSys</button>
+            </div>
+
+            <div style="text-align:right;">
+              <span id="manualDateBadge" style="display:inline-block; font-size:12.5px; font-weight:700; color:#047857; background:#dcfce7; padding:5px 12px; border-radius:6px; border:1px solid #86efac;">
+                Report Date: <span id="manualDateTextDisplay">—</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
         <div class="summary-grid">
           <div>
             <label>Ref. No</label>
@@ -188,8 +272,13 @@
             <label>Referred By</label>
             <strong data-show="agency">—</strong>
           </div>
-          <div>
-            <label>Date</label>
+          <div id="patientDateSummaryBox">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <label>Date </label>
+              <button type="button" id="editDateBtn" title="Click to manually change date" style="background:transparent; border:none; cursor:pointer; color:#0d9488; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:3px; padding:0;">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Change
+              </button>
+            </div>
             <strong data-show="medical_date">—</strong>
           </div>
           <div>
@@ -202,8 +291,22 @@
           </div>
         </div>
 
+        <div class="h360-panel">
+          <div class="h360-info">
+            <span class="h360-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 18h8M10 22v-4M14 22a7 7 0 1 0-7-7c0 1.25.33 2.42.91 3.43M14 15l4-8 3 1-4 8M10 12l2-4"/></svg></span>
+            <div>
+              <div class="h360-title">Erba H360 Machine Interface</div>
+              <p id="h360Status" class="h360-status-text">Select patient &amp; send to H360 analyzer on 10.0.0.100:5600</p>
+            </div>
+          </div>
+          <button type="button" class="btn h360-btn" id="sendH360Btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            <span>Send to H360 Machine</span>
+          </button>
+        </div>
+
         <details id="extraPatientDetails" class="patient-extra" hidden>
-          <summary>📋 View Full NeoSys Record &amp; Lab Data</summary>
+          <summary><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:5px;"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>View Full NeoSys Record &amp; Lab Data</summary>
           <div id="extraPatientContent" class="extra-content"></div>
         </details>
       </section>
@@ -212,6 +315,7 @@
         <input type="hidden" name="ref_no">
         <input type="hidden" name="passport_no">
         <input type="hidden" name="fname">
+        <input type="hidden" name="full_name">
         <input type="hidden" name="age">
         <input type="hidden" name="gender">
         <input type="hidden" name="agency">
@@ -219,7 +323,7 @@
         <input type="hidden" name="specimen">
         <input type="hidden" name="report_time">
         <input type="hidden" name="test_method" value="Erba Mannheim Fully Auto Analyzer">
-        <input type="hidden" name="result_note" value="[Repeated and Confirmed]">
+        <input type="hidden" name="result_note" id="result_note" value="">
         <input type="hidden" name="reference_range">
         <input type="hidden" name="unit">
 
@@ -233,20 +337,60 @@
           </div>
           <div class="test-grid">
             <div class="field">
-              <label for="test_name">Test</label>
+              <label for="report_type" style="font-weight:700; color:var(--brand, #0d9488);">
+                Report Type / Package (වාර්තා වර්ගය / පැකේජය)
+              </label>
+              <select id="report_type" name="report_type" style="font-weight:600; border:2px solid #0d9488; background:#f0fdf4;">
+                <option value="single" selected>Single Test Report (තනි පරීක්ෂණ වාර්තාවක්)</option>
+                <optgroup label="Standard Packages (ප්‍රමිතිගත පැකේජ)">
+                  <option value="Type 10 B">Type 10 B (Medical Package - 4 Reports)</option>
+                  <option value="Type 10 B with urine drug">Type 10 B with urine drug (5 Reports)</option>
+                  <option value="Type 7">Type 7 (Russia Package - 4 Reports)</option>
+                    <option value="Type 11">Type 11 (Medical Package - 5 Reports: FBS, SGPT/SGOT, UFR, GGT, Lipid Profile)</option>
+                  <option value="Shipping">Shipping (Type 12 - 1: 14 Reports Medical Package)</option>
+                </optgroup>
+                <optgroup label="Custom Medical Packages (සුපර් ඇඩ්මින් පැකේජ)" id="customPackagesOptGroup">
+                  <!-- Populated dynamically from /api/packages -->
+                </optgroup>
+              </select>
+            </div>
+            <div class="field">
+              <label for="test_name" style="font-weight:700;">Test Report (පරීක්ෂණ වාර්තාව)</label>
               <select id="test_name" name="test_name">
-                <option value="">Select a test</option>
-                <option>FBS</option>
-                <option>RBS</option>
-                <option>Total Cholesterol</option>
-                <option>SGPT</option>
-                <option>SGOT</option>
-                <option>SGPT &amp; SGOT</option>
-                <option>Lipid Profile</option>
-                <option>Total Bilirubine</option>
-                <option>Serum Creatine</option>
-                <option>Urine Full Report</option>
-                <option>Haemoglobin A1C</option>
+                <option value="">-- Select Test or Medical Package --</option>
+                <optgroup label="📋 Multi-Sheet Medical Packages (බහු-පත්‍ර පැකේජ)" id="builtinPackagesOptGroup">
+                  <option value="Type 10 B">Type 10 B (Medical Package - 4 Reports)</option>
+                  <option value="Type 10 B with urine drug">Type 10 B with urine drug (5 Reports: 12 Drugs)</option>
+                  <option value="Type 11">Type 11 (Medical Package - 5 Reports: FBS, SGPT/SGOT, UFR, GGT, Lipid)</option>
+                  <option value="Type 7">Type 7 (Russia Package - 4 Reports: UFR, TB, Brucellosis, HIV)</option>
+                </optgroup>
+                <optgroup label="⭐ Custom Medical Packages" id="customPackagesTestOptGroup">
+                  <!-- Populated dynamically -->
+                </optgroup>
+                <optgroup label="🧪 Single Laboratory Reports (තනි පරීක්ෂණ)">
+                  <option value="FBS">FBS (Fasting Blood Sugar)</option>
+                  <option value="Fasting Blood Sugar">Fasting Blood Sugar</option>
+                  <option value="RBS">RBS (Random Blood Sugar)</option>
+                  <option value="Total Cholesterol">Total Cholesterol</option>
+                  <option value="SGPT">SGPT</option>
+                  <option value="SGOT">SGOT</option>
+                  <option value="SGPT & SGOT">SGPT &amp; SGOT</option>
+                  <option value="Lipid Profile">Lipid Profile</option>
+                  <option value="Gamma GT">Gamma GT</option>
+                  <option value="Total Bilirubine">Total Bilirubine</option>
+                  <option value="Serum Creatine">Serum Creatine</option>
+                  <option value="Urine Full Report">Urine Full Report</option>
+                  <option value="Urine Drug Screening (12 Drugs)">Urine Drug Screening (12 Drugs)</option>
+                  <option value="Urine Drug Screening (5 Drugs)">Urine Drug Screening (5 Drugs)</option>
+                  <option value="Urine Drug Screening" style="display:none;">Urine Drug Screening</option>
+                  <option value="Haemoglobin A1C">Haemoglobin A1C</option>
+                  <option value="Full Blood Count">Full Blood Count</option>
+                  <option value="Total β - HCG Concentration">Total β - HCG Concentration</option>
+                  <option value="BETA H.C.G.">BETA H.C.G.</option>
+                  <option value="Tuberculosis Rapid Test">Tuberculosis Rapid Test</option>
+                  <option value="Brucellosis Test">Brucellosis Test</option>
+                  <option value="HIV Ag & Ab Test">HIV Ag &amp; Ab Test</option>
+                </optgroup>
               </select>
             </div>
             <div class="field" id="regularResultField">
@@ -261,6 +405,12 @@
                   <label for="sgot_result">SGOT Result</label>
                   <input id="sgot_result" name="sgot_result" placeholder="Enter SGOT result">
                 </div>
+              </div>
+              <div id="repeatedConfirmedWrap" style="margin-top:8px;">
+                <label style="display:inline-flex; align-items:center; gap:8px; cursor:pointer; font-size:12.5px; font-weight:600; color:#334155; background:#f8fafc; border:1px solid #cbd5e1; padding:6px 12px; border-radius:6px; user-select:none;">
+                  <input type="checkbox" id="enable_repeated_confirmed" name="enable_repeated_confirmed" style="width:16px; height:16px; cursor:pointer; accent-color:#0d9488;">
+                  <span>[Repeated and Confirmed] <small style="color:#64748b; font-weight:normal;">(Auto-checked if result is HIGH, or toggle manually)</small></span>
+                </label>
               </div>
               <div id="lipidResults" class="split-results lipid-inputs" hidden>
                 <div class="field">
@@ -279,7 +429,7 @@
             </div>
             <div class="field" id="unitField">
               <label for="unit_display">Unit</label>
-              <input id="unit_display" value="—" readonly>
+              <input id="unit_display" value="" readonly>
             </div>
             <div class="field" id="referenceRangeField">
               <label for="reference_range">Reference Range</label>
@@ -407,13 +557,1018 @@
                   <div class="hba1c-ref-row alert"><span>&gt;8.0%</span><em>Action Suggested (Adults)</em></div>
                 </div>
                 <div class="hba1c-device-tag">
-                  <strong>Analyzer:</strong> HemoCue® HbA1c 501 &nbsp;|&nbsp; <strong>Method:</strong> Fluorescence Immunoassay (FIA)
+                  <strong>Analyzer:</strong> HemoCue? HbA1c 501 &nbsp;|&nbsp; <strong>Method:</strong> Fluorescence Immunoassay (FIA)
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="field method">
+          <!-- Total β - HCG Concentration (FIA) Inputs -->
+          <div id="betaHcgFiaResults" class="beta-hcg-inputs" hidden>
+            <div class="hcg-toolbar">
+              <div class="hcg-toolbar-info">
+                <h4>Total β - HCG Concentration (Fluorescence Immunoassay - FIA)</h4>
+                <p>Standard negative value is <strong>&lt; 5.00 mIU/mL (Negative)</strong>. Enter concentration and select interpretation.</p>
+              </div>
+              <button type="button" class="btn secondary hcg-reset-btn" id="resetBetaHcgFiaBtn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                Reset Normal (&lt; 5.00 Negative)
+              </button>
+            </div>
+
+            <div class="hcg-card-body">
+              <div class="hcg-inputs-row">
+                <div class="field">
+                  <label for="beta_hcg_conc_input">Concentration (mIU/mL)</label>
+                  <div class="hcg-input-wrap">
+                    <input id="beta_hcg_conc_input" name="beta_hcg_conc" value="< 5.00" placeholder="e.g. < 5.00 or 16707.4" autocomplete="off">
+                    <span class="hcg-unit-badge">mIU/mL</span>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <label for="beta_hcg_status_select">Interpretation Result</label>
+                  <select id="beta_hcg_status_select" name="beta_hcg_status">
+                    <option value="Negative" selected>Negative</option>
+                    <option value="Positive">Positive</option>
+                    <option value="Weakly Positive">Weakly Positive</option>
+                    <option value="Today Negative&#10;(Come with next period date)">Today Negative (Come with next period date)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field" style="margin-top:12px;">
+                <label for="beta_hcg_comment_input">Comments Note</label>
+                <input id="beta_hcg_comment_input" name="beta_hcg_comment" value="Total β - HCG Level <5.00 - Negative for Pregnancy" placeholder="e.g. Total β - HCG Level <5.00 - Negative for Pregnancy">
+              </div>
+
+              <div class="hcg-ref-box">
+                <div class="hcg-ref-title">Reference Ranges: Pregnant Women (Week since LMP*)</div>
+                <div class="hcg-ref-table-wrap">
+                  <table class="hcg-ref-table">
+                    <thead>
+                      <tr>
+                        <th>Week since LMP*</th>
+                        <th>Total ?-HCG Level [mIU/mL]</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr><td>3</td><td>5 - 50</td></tr>
+                      <tr><td>4</td><td>5 - 426</td></tr>
+                      <tr><td>5</td><td>18 - 7,340</td></tr>
+                      <tr><td>6</td><td>1,080 - 56,500</td></tr>
+                      <tr><td>7 - 8</td><td>7,650 - 229,000</td></tr>
+                      <tr><td>9 - 12</td><td>25,700 - 288,000</td></tr>
+                      <tr><td>13 - 16</td><td>13,300 - 254,000</td></tr>
+                      <tr><td>17 - 24</td><td>4,060 - 165,400</td></tr>
+                      <tr><td>25 - 40</td><td>3,640 - 117,000</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="hcg-device-tag">
+                  <strong>Test Method:</strong> Fluorescence Immunoassay (FIA)
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- BETA H.C.G. (Rapid) Inputs -->
+          <div id="betaHcgRapidResults" class="beta-hcg-inputs" hidden>
+            <div class="hcg-toolbar">
+              <div class="hcg-toolbar-info">
+                <h4>BETA H.C.G. (Immunochromatographic assay - Rapid)</h4>
+                <p>Standard qualitative rapid pregnancy test. Choose the result from options below.</p>
+              </div>
+              <button type="button" class="btn secondary hcg-reset-btn" id="resetBetaHcgRapidBtn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                Reset Negative
+              </button>
+            </div>
+
+            <div class="hcg-card-body">
+              <div class="field">
+                <label for="beta_hcg_rapid_select">Result</label>
+                <select id="beta_hcg_rapid_select" name="beta_hcg_rapid_result">
+                  <option value="Negative" selected>Negative</option>
+                  <option value="Positive">Positive</option>
+                  <option value="Weakly Positive">Weakly Positive</option>
+                  <option value="Today Negative&#10;(Come with next period date)">Today Negative (Come with next period date)</option>
+                </select>
+              </div>
+
+              <div class="hcg-device-tag" style="margin-top:14px;">
+                <strong>Test Method:</strong> Immunochromatographic assay-Rapid
+              </div>
+            </div>
+          </div>
+
+          <!-- Type 7 (Russia) Inputs -->
+          <div id="type7Results" class="type7-inputs" hidden>
+            <div class="hcg-toolbar" style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:12px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center;">
+              <div class="hcg-toolbar-info">
+                <h4 style="margin:0; font-size:14px; color:#166534; font-weight:700;">Type 7 (Russia) 4-in-1 Medical Package</h4>
+                <p style="margin:2px 0 0; font-size:11.5px; color:#15803d;">Generates 4 distinct reports: Urine Full Report, Tuberculosis, Brucellosis, and HIV Ag &amp; Ab.</p>
+              </div>
+              <button type="button" class="btn secondary btn-xs" id="resetType7Btn">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:3px;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                Reset Defaults
+              </button>
+            </div>
+
+            <div class="card-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px;">
+              <div class="field">
+                <label for="tb_result" style="font-weight:600; font-size:12px;">Tuberculosis (TB) Result</label>
+                <select id="tb_result" name="tb_result">
+                  <option value="Negative" selected>Negative</option>
+                  <option value="Positive">Positive</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="brucellosis_result" style="font-weight:600; font-size:12px;">Brucellosis Result (+1 Day Date)</label>
+                <select id="brucellosis_result" name="brucellosis_result">
+                  <option value="Negative" selected>Negative</option>
+                  <option value="Positive">Positive</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="hiv_result" style="font-weight:600; font-size:12px;">HIV Ag &amp; Ab Result (Full Name)</label>
+                <select id="hiv_result" name="hiv_result">
+                  <option value="Negative" selected>Negative</option>
+                  <option value="Positive">Positive</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Super Admin Custom Test Inputs -->
+          <div id="customTestResults" class="custom-test-inputs" hidden>
+            <div class="custom-test-toolbar" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <h4 id="customTestTitleDisplay" style="margin:0; font-size:14px; color:#1e293b; font-weight:700;">Custom Laboratory Report</h4>
+                <p id="customTestCategoryBadge" style="margin:2px 0 0; font-size:11.5px; color:#64748b;">Category: Infectious Disease | Method: Rapid Test</p>
+              </div>
+              <button type="button" class="btn secondary btn-xs" id="resetCustomTestBtn">Reset Default</button>
+            </div>
+
+            <div class="card-body">
+              <div class="field" id="customTestSelectWrap">
+                <label for="custom_test_result_select" style="font-weight:600; font-size:12px;">Test Result</label>
+                <select id="custom_test_result_select" name="custom_test_result">
+                  <option value="Negative" selected>Negative</option>
+                  <option value="Positive">Positive</option>
+                </select>
+              </div>
+              <div class="field" id="customTestInputWrap" hidden>
+                <label for="custom_test_result_input" style="font-weight:600; font-size:12px;">Test Result Value</label>
+                <input id="custom_test_result_input" type="text" placeholder="Enter result value">
+              </div>
+              <div style="margin-top:10px; font-size:11.5px; color:#64748b; display:flex; gap:16px; flex-wrap:wrap;">
+                <span id="customTestMethodText"><strong>Method:</strong> Rapid Immunochromatography</span>
+                <span id="customTestRefText"></span>
+                <span id="customTestSpecimenText"><strong>Specimen:</strong> Blood</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Custom Medical Package Details Card -->
+          <div id="customPackageCard" class="custom-package-inputs" hidden>
+            <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:10px; padding:14px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+              <div>
+                <h4 id="customPackageTitle" style="margin:0; font-size:15px; color:#166534; font-weight:700;">Medical Package</h4>
+                <p id="customPackageDesc" style="margin:3px 0 0; font-size:12px; color:#15803d;">Contains multiple laboratory reports bundled together.</p>
+                <div id="customPackageTestsList" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:4px;">
+                  <!-- Test pills -->
+                </div>
+              </div>
+              <span class="tag green" style="font-size:11.5px; font-weight:700;">Multi-Report Package</span>
+            </div>
+          </div>
+
+          <div id="fbcResults" class="fbc-inputs" hidden>
+            <div class="fbc-toolbar">
+              <div class="fbc-toolbar-info">
+                <h4>Full Blood Count (H360 Hematology)</h4>
+                <p id="fbcNoticeText">Connected to Erba H360 analyzer. You can sync results directly from the machine or enter values manually.</p>
+              </div>
+              <div class="fbc-toolbar-actions">
+                <div class="fbc-sample-sync-group">
+                  <input type="text" id="fbc_sync_sample_id" class="fbc-sync-input" placeholder="Sample ID / Ref (e.g. 04066)" title="Sample ID or Reference No to sync from H360">
+                  <button type="button" class="btn primary fbc-sync-btn" id="syncH360Btn" title="Fetch results for this Sample ID or latest from Erba H360 machine">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle; margin-right:5px;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                    Sync from H360
+                  </button>
+                </div>
+                <button type="button" class="btn secondary fbc-reset-btn" id="resetFbcBtn">
+                  Reset Normal Defaults
+                </button>
+              </div>
+            </div>
+
+            <div id="fbcStatusBanner" class="fbc-status-banner" hidden>
+              <span class="fbc-status-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg></span>
+              <span id="fbcStatusMsg">Latest H360 result ready</span>
+              <button type="button" class="btn-xs" id="applyLatestH360Btn">Apply</button>
+            </div>
+
+            <div class="fbc-group-card">
+              <div class="fbc-group-header">
+                <span class="fbc-group-title">White Blood Cells &amp; Differential</span>
+                <span class="fbc-badge">WBC &amp; 3-Part Diff</span>
+              </div>
+              <div class="fbc-grid">
+                <div class="field">
+                  <label for="fbc_wbc">Total WBC (10?/?L)</label>
+                  <input id="fbc_wbc" name="fbc_wbc" value="8.88" placeholder="e.g. 8.88">
+                  <span class="field-hint">Ref: 4.00 - 10.50 10?/?L</span>
+                </div>
+                <div class="field">
+                  <label for="fbc_lym_percent">LYM% (%)</label>
+                  <input id="fbc_lym_percent" name="fbc_lym_percent" value="32.8" placeholder="e.g. 32.8">
+                  <span class="field-hint">Ref: 20.0 - 50.0 %</span>
+                </div>
+                <div class="field">
+                  <label for="fbc_mid_percent">MID% (%)</label>
+                  <input id="fbc_mid_percent" name="fbc_mid_percent" value="8.5" placeholder="e.g. 8.5">
+                  <span class="field-hint">Ref: 3.0 - 9.0 %</span>
+                </div>
+                <div class="field">
+                  <label for="fbc_gran_percent">GRAN% (%)</label>
+                  <input id="fbc_gran_percent" name="fbc_gran_percent" value="58.7" placeholder="e.g. 58.7">
+                  <span class="field-hint">Ref: 50.0 - 70.0 %</span>
+                </div>
+                <div class="field">
+                  <label for="fbc_lym_num">LYM# (10?/?L)</label>
+                  <input id="fbc_lym_num" name="fbc_lym_num" value="2.91" placeholder="e.g. 2.91">
+                  <span class="field-hint">Ref: 1.10 - 3.20 10?/?L</span>
+                </div>
+                <div class="field">
+                  <label for="fbc_mid_num">MID# (10?/?L)</label>
+                  <input id="fbc_mid_num" name="fbc_mid_num" value="0.75" placeholder="e.g. 0.75">
+                  <span class="field-hint">Ref: 0.10 - 0.90 10?/?L</span>
+                </div>
+                <div class="field">
+                  <label for="fbc_gran_num">GRAN# (10?/?L)</label>
+                  <input id="fbc_gran_num" name="fbc_gran_num" value="5.22" placeholder="e.g. 5.22">
+                  <span class="field-hint">Ref: 2.00 - 7.00 10?/?L</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="fbc-group-card">
+              <div class="fbc-group-header">
+                <span class="fbc-group-title">Red Blood Cells &amp; Indices</span>
+                <span class="fbc-badge">Erythrocytes</span>
+              </div>
+              <div class="fbc-grid">
+                <div class="field">
+                  <label for="fbc_rbc">RBC (10?/?L)</label>
+                  <input id="fbc_rbc" name="fbc_rbc" value="4.85" placeholder="e.g. 4.85">
+                  <span class="field-hint">Ref: 4.30 - 5.80 (M) / 3.80 - 5.00 (F)</span>
+                </div>
+                <div class="field">
+                  <label for="fbc_hemoglobin">HGB - Haemoglobin (g/dL)</label>
+                  <input id="fbc_hemoglobin" name="fbc_hemoglobin" value="13.5" placeholder="e.g. 13.5">
+                  <span class="field-hint">Ref: 13.0 - 17.5 (M) / 11.5 - 15.5 (F)</span>
+                </div>
+                <div class="field">
+                  <label for="fbc_pcv">HCT - Haematocrit (%)</label>
+                  <input id="fbc_pcv" name="fbc_pcv" value="42.0" placeholder="e.g. 42.0">
+                  <span class="field-hint">Ref: 40.0 - 50.0 (M) / 35.0 - 45.0 (F)</span>
+                </div>
+                <div class="field">
+                  <label for="fbc_mcv">MCV (fL)</label>
+                  <input id="fbc_mcv" name="fbc_mcv" value="88.0" placeholder="e.g. 88.0">
+                  <span class="field-hint">Ref: 82.0 - 100.0 fL</span>
+                </div>
+                <div class="field">
+                  <label for="fbc_mch">MCH (pg)</label>
+                  <input id="fbc_mch" name="fbc_mch" value="29.0" placeholder="e.g. 29.0">
+                  <span class="field-hint">Ref: 27.0 - 34.0 pg</span>
+                </div>
+                <div class="field">
+                  <label for="fbc_mchc">MCHC (g/dL)</label>
+                  <input id="fbc_mchc" name="fbc_mchc" value="33.0" placeholder="e.g. 33.0">
+                  <span class="field-hint">Ref: 31.6 - 35.4 g/dL</span>
+                </div>
+                <div class="field">
+                  <label for="fbc_rdw_cv">RDW-CV (%)</label>
+                  <input id="fbc_rdw_cv" name="fbc_rdw_cv" value="12.5" placeholder="e.g. 12.5">
+                  <span class="field-hint">Ref: 11.5 - 14.5 %</span>
+                </div>
+                <div class="field">
+                  <label for="fbc_rdw_sd">RDW-SD (fL)</label>
+                  <input id="fbc_rdw_sd" name="fbc_rdw_sd" value="42.0" placeholder="e.g. 42.0">
+                  <span class="field-hint">Ref: 35.0 - 56.0 fL</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="fbc-group-card">
+              <div class="fbc-group-header">
+                <span class="fbc-group-title">Platelet Indices</span>
+                <span class="fbc-badge">Thrombocytes</span>
+              </div>
+              <div class="fbc-grid">
+                <div class="field">
+                  <label for="fbc_platelets">PLT - Platelet Count (10?/?L)</label>
+                  <input id="fbc_platelets" name="fbc_platelets" value="280" placeholder="e.g. 280">
+                  <span class="field-hint">Ref: 140 - 450 10?/?L</span>
+                </div>
+                <div class="field">
+                  <label for="fbc_mpv">MPV (fL)</label>
+                  <input id="fbc_mpv" name="fbc_mpv" value="8.5" placeholder="e.g. 8.5">
+                  <span class="field-hint">Ref: 7.0 - 11.0 fL</span>
+                </div>
+                <div class="field">
+                  <label for="fbc_pdw_sd">PDW-SD (fL)</label>
+                  <input id="fbc_pdw_sd" name="fbc_pdw_sd" value="11.1" placeholder="e.g. 11.1">
+                  <span class="field-hint">Ref: 9.0 - 17.0 fL</span>
+                </div>
+                <div class="field">
+                  <label for="fbc_pdw_cv">PDW-CV (%)</label>
+                  <input id="fbc_pdw_cv" name="fbc_pdw_cv" value="15.0" placeholder="e.g. 15.0">
+                  <span class="field-hint">Ref: 10.0 - 17.9 %</span>
+                </div>
+                <div class="field">
+                  <label for="fbc_pct">PCT (%)</label>
+                  <input id="fbc_pct" name="fbc_pct" value="0.247" placeholder="e.g. 0.247">
+                  <span class="field-hint">Ref: 0.108 - 0.282 %</span>
+                </div>
+                <div class="field">
+                  <label for="fbc_p_lcr">P-LCR (%)</label>
+                  <input id="fbc_p_lcr" name="fbc_p_lcr" value="19.5" placeholder="e.g. 19.5">
+                  <span class="field-hint">Ref: 11.0 - 45.0 %</span>
+                </div>
+                <div class="field">
+                  <label for="fbc_p_lcc">P-LCC (10?/?L)</label>
+                  <input id="fbc_p_lcc" name="fbc_p_lcc" value="54" placeholder="e.g. 54">
+                  <span class="field-hint">Ref: 30 - 90 10?/?L</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="fbc-group-card" id="fbcDiffCard">
+              <div class="fbc-group-header">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <label class="toggle-label" style="display:inline-flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; margin:0; font-size:14px; user-select:none;">
+                    <input type="checkbox" id="fbc_include_diff" name="fbc_include_diff" value="1" style="width:17px; height:17px; accent-color:#0d9488; cursor:pointer;" checked>
+                    <span>Include Differential Count in Report</span>
+                  </label>
+                </div>
+                <span class="fbc-badge" id="fbcDiffBadge" style="background:#ccfbf1; color:#065f46;">Included (On)</span>
+              </div>
+              <div class="fbc-grid" id="fbcDiffInputs" style="opacity:1; pointer-events:auto; transition:opacity 0.2s ease;">
+                <div class="field">
+                  <label for="fbc_diff_neutrophil">NEUTROPHIL (%)</label>
+                  <input id="fbc_diff_neutrophil" name="fbc_diff_neutrophil" value="65" placeholder="65">
+                  <span class="field-hint">Ref: 40 - 60 %</span>
+                </div>
+                <div class="field">
+                  <label for="fbc_diff_lymphocyte">LYMPHOCYTE (%)</label>
+                  <input id="fbc_diff_lymphocyte" name="fbc_diff_lymphocyte" value="30" placeholder="30">
+                  <span class="field-hint">Ref: 20 - 40 %</span>
+                </div>
+                <div class="field">
+                  <label for="fbc_diff_monocyte">MONOCYTE (%)</label>
+                  <input id="fbc_diff_monocyte" name="fbc_diff_monocyte" value="03" placeholder="03">
+                  <span class="field-hint">Ref: 2 - 8 %</span>
+                </div>
+                <div class="field">
+                  <label for="fbc_diff_eosinophil">EOSINOPHIL (%)</label>
+                  <input id="fbc_diff_eosinophil" name="fbc_diff_eosinophil" value="02" placeholder="02">
+                  <span class="field-hint">Ref: 1 - 4 %</span>
+                </div>
+                <div class="field">
+                  <label for="fbc_diff_basophil">BASOPHIL (%)</label>
+                  <input id="fbc_diff_basophil" name="fbc_diff_basophil" value="00" placeholder="00">
+                  <span class="field-hint">Ref: less than 1%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="fbc-group-card">
+              <div class="fbc-group-header">
+                <span class="fbc-group-title">Analyzer Message Boxes</span>
+                <span class="fbc-badge">Right Column Boxes</span>
+              </div>
+              <div class="fbc-grid">
+                <div class="field">
+                  <label for="fbc_wbc_message">WBC Message</label>
+                  <input id="fbc_wbc_message" name="fbc_wbc_message" placeholder="Optional WBC remarks">
+                </div>
+                <div class="field">
+                  <label for="fbc_rbc_message">RBC Message</label>
+                  <input id="fbc_rbc_message" name="fbc_rbc_message" placeholder="Optional RBC remarks">
+                </div>
+                <div class="field">
+                  <label for="fbc_plt_message">PLT Message</label>
+                  <input id="fbc_plt_message" name="fbc_plt_message" placeholder="Optional PLT remarks">
+                </div>
+              </div>
+            </div>
+
+            <div class="fbc-group-card">
+              <div class="fbc-group-header">
+                <span class="fbc-group-title">Morphology Flags &amp; Comments</span>
+                <span class="fbc-badge">General Comments</span>
+              </div>
+              <div class="field" style="margin-top:10px;">
+                <label for="fbc_comments">Flags / Morphology Remarks (e.g. Microcytes, Iron Deficiency?, PLT Abnormal Distribution)</label>
+                <input id="fbc_comments" name="fbc_comments" value="Normal cell morphology and count distribution" placeholder="e.g. Microcytes, Iron Deficiency?, PLT Abnormal Distribution">
+              </div>
+            </div>
+
+            <div class="fbc-group-card">
+              <div class="fbc-group-header">
+                <span class="fbc-group-title">Erba H360 Analyzer Histograms</span>
+                <span class="fbc-badge" id="fbcHistoBadge">3 Graphs Loaded</span>
+              </div>
+              <div class="fbc-histo-grid">
+                <div class="histo-thumb-box">
+                  <div class="histo-thumb-title">WBC Histogram</div>
+                  <img id="fbcWbcHistoImg" src="/assets/h360-wbc.png" alt="WBC Histogram">
+                </div>
+                <div class="histo-thumb-box">
+                  <div class="histo-thumb-title">RBC Histogram</div>
+                  <img id="fbcRbcHistoImg" src="/assets/h360-rbc.png" alt="RBC Histogram">
+                </div>
+                <div class="histo-thumb-box">
+                  <div class="histo-thumb-title">PLT Histogram</div>
+                  <img id="fbcPltHistoImg" src="/assets/h360-plt.png" alt="PLT Histogram">
+                </div>
+              </div>
+              <input type="hidden" id="fbc_wbc_histogram" name="fbc_wbc_histogram">
+              <input type="hidden" id="fbc_rbc_histogram" name="fbc_rbc_histogram">
+              <input type="hidden" id="fbc_plt_histogram" name="fbc_plt_histogram">
+            </div>
+          </div>
+
+          <!-- Type 10 B Package Inputs -->
+          <div id="type10bResults" class="type10b-inputs" hidden>
+            <div class="type10b-toolbar">
+              <div class="type10b-toolbar-info">
+                <h4 id="type10bTitle">Type 10 B Medical Package</h4>
+                <p id="type10bDesc">Auto-generates multi-sheet Excel report with Gonorrhea, Urine Full Report, Differential Count, and Serology.</p>
+              </div>
+              <div class="type10b-toolbar-actions">
+                <button type="button" class="btn secondary type10b-reset-btn" id="resetType10bBtn">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                  Reset Defaults
+                </button>
+              </div>
+            </div>
+
+            <!-- Package Contents Pill Bar -->
+            <div class="type10b-package-bar" id="type10bPackageBar">
+              <span class="pkg-pill">✓ Sheet 1: Gonorrhea Test</span>
+              <span class="pkg-pill">✓ Sheet 2: Urine Full Report</span>
+              <span class="pkg-pill">✓ Sheet 3: FBC (Differential Count - DC)</span>
+              <span class="pkg-pill">✓ Sheet 4: Serology (5 Tests)</span>
+              <span class="pkg-pill drug-pill" id="pkgDrugPill" hidden>✓ Sheet 5: Urine Drug Screening (12 Drugs)</span>
+            </div>
+
+            <!-- Differential Count Card -->
+            <div class="fbc-group-card" style="margin-top:14px;">
+              <div class="fbc-group-header">
+                <span class="fbc-group-title">Differential Count (FBC Sheet)</span>
+                <span class="fbc-badge">Manual or Sync</span>
+              </div>
+              <div class="fbc-diff-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:12px; margin-top:10px;">
+                <div class="field">
+                  <label for="type10b_diff_neutrophil">NEUTROPHIL (%)</label>
+                  <input id="type10b_diff_neutrophil" name="diff_neutrophil" value="45" placeholder="45">
+                  <span class="field-hint">Ref: 40 - 60 %</span>
+                </div>
+                <div class="field">
+                  <label for="type10b_diff_lymphocyte">LYMPHOCYTE (%)</label>
+                  <input id="type10b_diff_lymphocyte" name="diff_lymphocyte" value="46" placeholder="46">
+                  <span class="field-hint">Ref: 20 - 40 %</span>
+                </div>
+                <div class="field">
+                  <label for="type10b_diff_monocyte">MONOCYTE (%)</label>
+                  <input id="type10b_diff_monocyte" name="diff_monocyte" value="06" placeholder="06">
+                  <span class="field-hint">Ref: 2 - 8 %</span>
+                </div>
+                <div class="field">
+                  <label for="type10b_diff_eosinophil">EOSINOPHIL (%)</label>
+                  <input id="type10b_diff_eosinophil" name="diff_eosinophil" value="03" placeholder="03">
+                  <span class="field-hint">Ref: 1 - 4 %</span>
+                </div>
+                <div class="field">
+                  <label for="type10b_diff_basophil">BASOPHIL (%)</label>
+                  <input id="type10b_diff_basophil" name="diff_basophil" value="00" placeholder="00">
+                  <span class="field-hint">Ref: less than 1%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Serology Summary Card -->
+            <div class="fbc-group-card" style="margin-top:14px;">
+              <div class="fbc-group-header">
+                <span class="fbc-group-title">Serology Results (Sheet 4)</span>
+                <span class="fbc-badge">Standard Screen</span>
+              </div>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:12px; margin-top:10px;">
+                <div class="field">
+                  <label for="serology_hiv">HIV I &amp; II</label>
+                  <input id="serology_hiv" name="serology_hiv" value="Negative" readonly>
+                </div>
+                <div class="field">
+                  <label for="serology_hba">Hepatitis B [HBsAg]</label>
+                  <input id="serology_hba" name="serology_hba" value="Negative" readonly>
+                </div>
+                <div class="field">
+                  <label for="serology_hcv">Hepatitis C [HCV]</label>
+                  <input id="serology_hcv" name="serology_hcv" value="Negative" readonly>
+                </div>
+                <div class="field">
+                  <label for="serology_vdrl">VDRL</label>
+                  <input id="serology_vdrl" name="serology_vdrl" value="Non Reactive" readonly>
+                </div>
+                <div class="field">
+                  <label for="serology_syphilis">Syphilis</label>
+                  <input id="serology_syphilis" name="serology_syphilis" value="Negative" readonly>
+                </div>
+              </div>
+            </div>
+
+            <!-- Urine Drug Summary Card (Shown if hasUrineDrug) -->
+            <div class="fbc-group-card" id="type10bDrugCard" style="margin-top:14px;" hidden>
+              <div class="fbc-group-header">
+                <span class="fbc-group-title">Urine Drug Screening (Sheet 5)</span>
+                <span class="fbc-badge" id="type10bDrugBadge">5 Drugs Panel</span>
+              </div>
+              <div style="margin-top:10px;">
+                <label style="font-size:12px; font-weight:600; color:#475569;">Panel Selection:</label>
+                <select id="type10bDrugPanelSelect" style="padding:4px 8px; border-radius:6px; border:1px solid #cbd5e1; font-size:12px; margin-left:8px;">
+                  <option value="5" selected>5-Parameter (AMP, BZO, MET, OPI, THC)</option>
+                  <option value="12">12-Parameter (AMP, BAR, BZO, BUP, COC, THC, MTD, MET, MDMA, MOP, PCP, TCA)</option>
+                </select>
+              </div>
+              <p style="font-size:11.5px; color:#64748b; margin-top:6px;">Results default to Negative. Individual results can be adjusted in the test options.</p>
+            </div>
+          </div>
+
+          <!-- Urine Drug Screening Inputs (Dedicated Test Input Card) -->
+          <div id="urineDrugResults" class="type10b-inputs" hidden>
+            <div class="type10b-toolbar">
+              <div class="type10b-toolbar-info">
+                <h4>Urine Drug Screening Test</h4>
+                <p>Standard Immunochromatography rapid panel for occupational and overseas medical clearance.</p>
+              </div>
+              <div class="type10b-toolbar-actions">
+                <button type="button" class="btn secondary type10b-reset-btn" id="allNegativeDrugBtn">
+                  All Negative
+                </button>
+              </div>
+            </div>
+
+            <!-- Panel Selection -->
+            <div style="margin: 12px 0 16px; display: flex; align-items: center; gap: 12px; background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 16px; border-radius: 10px; flex-wrap:wrap;">
+              <label for="drugPanelTypeSelect" style="font-size: 13px; font-weight: 700; color: #1e293b; margin: 0;">Panel Type:</label>
+              <select id="drugPanelTypeSelect" name="drug_panel_type" onchange="window.syncDrugGrid && window.syncDrugGrid(); window.updatePreview && window.updatePreview();" oninput="window.syncDrugGrid && window.syncDrugGrid(); window.updatePreview && window.updatePreview();" style="padding: 6px 12px; border-radius: 8px; border: 1.5px solid #0d9488; font-weight: 700; font-size: 13px; background: #fff; cursor: pointer; color:#0f766e;">
+                <option value="12" selected>12-Parameter Panel (AMP, BAR, BZO, BUP, COC, THC, MTD, MET, MDMA, MOP, PCP, TCA)</option>
+                <option value="5">5-Parameter Panel (AMP, BZO, MET, OPI, THC) - Standard</option>
+              </select>
+              <span style="font-size: 11.5px; color: #64748b; margin-left: auto;">[Test Method - Immnochromatography]</span>
+            </div>
+
+            <!-- 5-Parameter Grid -->
+            <div id="drug5Grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+              <div class="field">
+                <label for="urine_drug_amp">Amphetamine (AMP)</label>
+                <select id="urine_drug_amp" name="urine_drug_amp" class="drug-select-status" onchange="window.handleDrugSelectChange && window.handleDrugSelectChange(this);" style="width:100%; padding:7px 10px; border-radius:8px; border:1px solid #cbd5e1; font-weight:600;">
+                  <option value="Negative" selected>Negative</option>
+                  <option value="Positive">Positive</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="urine_drug_bzo">Benzodiazepine (BZO)</label>
+                <select id="urine_drug_bzo" name="urine_drug_bzo" class="drug-select-status" onchange="window.handleDrugSelectChange && window.handleDrugSelectChange(this);" style="width:100%; padding:7px 10px; border-radius:8px; border:1px solid #cbd5e1; font-weight:600;">
+                  <option value="Negative" selected>Negative</option>
+                  <option value="Positive">Positive</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="urine_drug_met">Methamphetamine (MET)</label>
+                <select id="urine_drug_met" name="urine_drug_met" class="drug-select-status" onchange="window.handleDrugSelectChange && window.handleDrugSelectChange(this);" style="width:100%; padding:7px 10px; border-radius:8px; border:1px solid #cbd5e1; font-weight:600;">
+                  <option value="Negative" selected>Negative</option>
+                  <option value="Positive">Positive</option>
+                </select>
+              </div>
+              <div class="field" id="field_urine_drug_opi" style="display: none;">
+                <label for="urine_drug_opi">Opioid (OPI)</label>
+                <select id="urine_drug_opi" name="urine_drug_opi" class="drug-select-status" onchange="window.handleDrugSelectChange && window.handleDrugSelectChange(this);" style="width:100%; padding:7px 10px; border-radius:8px; border:1px solid #cbd5e1; font-weight:600;">
+                  <option value="Negative" selected>Negative</option>
+                  <option value="Positive">Positive</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="urine_drug_thc">Marijuana (THC)</label>
+                <select id="urine_drug_thc" name="urine_drug_thc" class="drug-select-status" onchange="window.handleDrugSelectChange && window.handleDrugSelectChange(this);" style="width:100%; padding:7px 10px; border-radius:8px; border:1px solid #cbd5e1; font-weight:600;">
+                  <option value="Negative" selected>Negative</option>
+                  <option value="Positive">Positive</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- 12-Parameter Additional Grid -->
+            <div id="drug12Grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 12px;">
+              <div class="field">
+                <label for="urine_drug_bar">Barbiturates (BAR)</label>
+                <select id="urine_drug_bar" name="urine_drug_bar" class="drug-select-status" onchange="window.handleDrugSelectChange && window.handleDrugSelectChange(this);" style="width:100%; padding:7px 10px; border-radius:8px; border:1px solid #cbd5e1; font-weight:600;">
+                  <option value="Negative" selected>Negative</option>
+                  <option value="Positive">Positive</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="urine_drug_bup">Buprenorphine (BUP)</label>
+                <select id="urine_drug_bup" name="urine_drug_bup" class="drug-select-status" onchange="window.handleDrugSelectChange && window.handleDrugSelectChange(this);" style="width:100%; padding:7px 10px; border-radius:8px; border:1px solid #cbd5e1; font-weight:600;">
+                  <option value="Negative" selected>Negative</option>
+                  <option value="Positive">Positive</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="urine_drug_coc">Cocaine (COC)</label>
+                <select id="urine_drug_coc" name="urine_drug_coc" class="drug-select-status" onchange="window.handleDrugSelectChange && window.handleDrugSelectChange(this);" style="width:100%; padding:7px 10px; border-radius:8px; border:1px solid #cbd5e1; font-weight:600;">
+                  <option value="Negative" selected>Negative</option>
+                  <option value="Positive">Positive</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="urine_drug_mtd">Methadone (MTD)</label>
+                <select id="urine_drug_mtd" name="urine_drug_mtd" class="drug-select-status" onchange="window.handleDrugSelectChange && window.handleDrugSelectChange(this);" style="width:100%; padding:7px 10px; border-radius:8px; border:1px solid #cbd5e1; font-weight:600;">
+                  <option value="Negative" selected>Negative</option>
+                  <option value="Positive">Positive</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="urine_drug_mdma">Methylenedioxymethamphetamine (MDMA)</label>
+                <select id="urine_drug_mdma" name="urine_drug_mdma" class="drug-select-status" onchange="window.handleDrugSelectChange && window.handleDrugSelectChange(this);" style="width:100%; padding:7px 10px; border-radius:8px; border:1px solid #cbd5e1; font-weight:600;">
+                  <option value="Negative" selected>Negative</option>
+                  <option value="Positive">Positive</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="urine_drug_mop">Morphine (MOP)</label>
+                <select id="urine_drug_mop" name="urine_drug_mop" class="drug-select-status" onchange="window.handleDrugSelectChange && window.handleDrugSelectChange(this);" style="width:100%; padding:7px 10px; border-radius:8px; border:1px solid #cbd5e1; font-weight:600;">
+                  <option value="Negative" selected>Negative</option>
+                  <option value="Positive">Positive</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="urine_drug_tml">Tramadol (TML)</label>
+                <select id="urine_drug_tml" name="urine_drug_tml" class="drug-select-status" onchange="window.handleDrugSelectChange && window.handleDrugSelectChange(this);" style="width:100%; padding:7px 10px; border-radius:8px; border:1px solid #cbd5e1; font-weight:600;">
+                  <option value="Negative" selected>Negative</option>
+                  <option value="Positive">Positive</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="urine_drug_tca">Tricyclic Antidepressants (TCA)</label>
+                <select id="urine_drug_tca" name="urine_drug_tca" class="drug-select-status" onchange="window.handleDrugSelectChange && window.handleDrugSelectChange(this);" style="width:100%; padding:7px 10px; border-radius:8px; border:1px solid #cbd5e1; font-weight:600;">
+                  <option value="Negative" selected>Negative</option>
+                  <option value="Positive">Positive</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Type 7 Package Inputs -->
+          <div id="type7Results" class="type10b-inputs" hidden>
+            <div class="type10b-toolbar">
+              <div class="type10b-toolbar-info">
+                <h4 id="type7Title">Type 7 Medical Package (Russia)</h4>
+                <p id="type7Desc">Auto-generates multi-sheet Excel report with Urine Full Report, Tuberculosis Rapid Test, Brucellosis Test (Date + 1 Day), and HIV Ag &amp; Ab Test (Full Name).</p>
+              </div>
+              <div class="type10b-toolbar-actions">
+                <button type="button" class="btn secondary type10b-reset-btn" id="resetType7Btn">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                  Reset Defaults
+                </button>
+              </div>
+            </div>
+
+            <!-- Package Contents Pill Bar -->
+            <div class="type10b-package-bar" id="type7PackageBar">
+              <span class="pkg-pill">✓ Sheet 1: Urine Full Report (UFR)</span>
+              <span class="pkg-pill">✓ Sheet 2: Tuberculosis Rapid Test (TB)</span>
+              <span class="pkg-pill" style="border-color:#93c5fd; background:#eff6ff; color:#1d4ed8;">✓ Sheet 3: Brucellosis Test (Date +1 Day)</span>
+              <span class="pkg-pill" style="border-color:#a7f3d0; background:#f0fdf4; color:#047857;">✓ Sheet 4: HIV Ag &amp; Ab Test (Full Name)</span>
+            </div>
+
+            <!-- Rapid Screen Results Card -->
+            <div class="fbc-group-card" style="margin-top:14px;">
+              <div class="fbc-group-header">
+                <span class="fbc-group-title">Rapid Screen Results</span>
+                <span class="fbc-badge">Standard Screen</span>
+              </div>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-top:10px;">
+                <div class="field">
+                  <label for="tb_result">Tuberculosis (TB Test)</label>
+                  <input id="tb_result" name="tb_result" value="Negative">
+                  <span class="field-hint">Method: Immunochromatography</span>
+                </div>
+                <div class="field">
+                  <label for="brucellosis_result">Brucellosis (BRUCELLA Test)</label>
+                  <input id="brucellosis_result" name="brucellosis_result" value="Negative">
+                  <span class="field-hint" style="color:#2563eb; font-weight:600;">Date: Medical Date + 1 Day</span>
+                </div>
+                <div class="field">
+                  <label for="hiv_result">HIV Ag &amp; Ab (HIV I &amp; II)</label>
+                  <input id="hiv_result" name="hiv_result" value="Negative">
+                  <span class="field-hint" style="color:#059669; font-weight:600;">Name: Full Patient Name</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          
+            <!-- Colombo Consultancy Medical Package Inputs -->
+            <div id="colomboResults" class="type10b-inputs" hidden>
+              <div class="type10b-toolbar">
+                <div class="type10b-toolbar-info">
+                  <h4 style="margin:0; font-size:14px; color:#1e293b; font-weight:700;">Type 11 Medical Package</h4>
+                  <p style="margin:2px 0 0; font-size:11.5px; color:#64748b;">Type 11 — 5 Reports: Fasting Blood Sugar, SGPT &amp; SGOT, Urine Full Report, Gamma GT, and Lipid Profile.</p>
+                </div>
+                <div class="type10b-toolbar-actions">
+                  <button type="button" class="btn secondary type10b-reset-btn" id="resetType11Btn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:4px;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                    Reset Defaults
+                  </button>
+                </div>
+              </div>
+
+              <!-- Package Contents Pill Bar -->
+              <div class="type10b-package-bar">
+                <span class="pkg-pill">Sheet 1: Fasting Blood Sugar</span>
+                <span class="pkg-pill">Sheet 2: SGPT &amp; SGOT</span>
+                <span class="pkg-pill">Sheet 3: Urine Full Report</span>
+                <span class="pkg-pill">Sheet 4: Gamma GT</span>
+                <span class="pkg-pill">Sheet 5: Lipid Profile</span>
+              </div>
+
+              <!-- Biochemistry & Enzymes Group -->
+              <div class="fbc-group-card" style="margin-top:14px;">
+                <div class="fbc-group-header">
+                  <span class="fbc-group-title">Biochemistry &amp; Enzymes</span>
+                  <span class="fbc-badge">Blood Specimen</span>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-top:10px;">
+                  <div class="field">
+                    <label for="colombo_fbs">Fasting Blood Sugar (mg/dl)</label>
+                    <input id="colombo_fbs" name="colombo_fbs" value="75">
+                    <span class="field-hint">Ref: 74 - 115 mg/dl</span>
+                  </div>
+                  <div class="field">
+                    <label for="colombo_sgpt">SGPT (iu/l)</label>
+                    <input id="colombo_sgpt" name="colombo_sgpt" value="10">
+                    <span class="field-hint">Ref: Upto 45 (M) / 34 (W)</span>
+                  </div>
+                  <div class="field">
+                    <label for="colombo_sgot">SGOT (iu/l)</label>
+                    <input id="colombo_sgot" name="colombo_sgot" value="13">
+                    <span class="field-hint">Ref: Upto 35 (M) / 31 (W)</span>
+                  </div>
+                  <div class="field">
+                    <label for="colombo_gamma_gt">Gamma GT (U/L)</label>
+                    <input id="colombo_gamma_gt" name="colombo_gamma_gt" value="18">
+                    <span class="field-hint">Ref: 5 - 40 U/L</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Lipid Profile Group -->
+              <div class="fbc-group-card" style="margin-top:14px;">
+                <div class="fbc-group-header">
+                  <span class="fbc-group-title">Lipid Profile Parameters</span>
+                  <span class="fbc-badge">End Point</span>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:12px; margin-top:10px;">
+                  <div class="field">
+                    <label for="colombo_cholesterol">Total Cholesterol</label>
+                    <input id="colombo_cholesterol" name="colombo_cholesterol" value="176">
+                    <span class="field-hint">&lt; 240 mg/dl</span>
+                  </div>
+                  <div class="field">
+                    <label for="colombo_hdl">HDL Cholesterol</label>
+                    <input id="colombo_hdl" name="colombo_hdl" value="44">
+                    <span class="field-hint">35 - 55 mg/dl</span>
+                  </div>
+                  <div class="field">
+                    <label for="colombo_ldl">LDL Cholesterol</label>
+                    <input id="colombo_ldl" name="colombo_ldl" value="112.4">
+                    <span class="field-hint">&lt; 130 mg/dl</span>
+                  </div>
+                  <div class="field">
+                    <label for="colombo_vldl">VLDL Cholesterol</label>
+                    <input id="colombo_vldl" name="colombo_vldl" value="19.6">
+                    <span class="field-hint">10 - 40 mg/dl</span>
+                  </div>
+                  <div class="field">
+                    <label for="colombo_triglyceride">Triglyceride</label>
+                    <input id="colombo_triglyceride" name="colombo_triglyceride" value="98">
+                    <span class="field-hint">&lt; 160 mg/dl</span>
+                  </div>
+                  <div class="field">
+                    <label for="colombo_cho_hdl">CHO / HDL Ratio</label>
+                    <input id="colombo_cho_hdl" name="colombo_cho_hdl" value="4">
+                    <span class="field-hint">3.3 - 4.4</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            
+            <!-- Shipping Medical Package (Type 12 - 1: 14 Reports) -->
+            <div id="shippingResults" class="type10b-inputs" hidden>
+              <div class="colombo-package-card" style="border: 2px solid #0284c7; background: #f0f9ff; border-radius: 10px; padding: 16px; margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #bae6fd; padding-bottom: 8px;">
+                  <div>
+                    <h4 style="margin: 0; color: #0369a1; font-size: 15px; font-weight: 800;">
+                      🚢 Shipping Medical Package (Type 12 - 1 • 14 Reports)
+                    </h4>
+                    <p style="margin: 4px 0 0; font-size: 12px; color: #0284c7;">
+                      Pre-employment Medical Examination Package for Seafarers &amp; Marine Shipping Crews (ILO / MLC Standard).
+                    </p>
+                  </div>
+                  <span class="fbc-badge" style="background: #0284c7; color: #fff; font-weight: 700; padding: 4px 10px; border-radius: 6px;">14 Sheets Multi-Excel</span>
+                </div>
+
+                <div class="package-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px;">
+                  <!-- 1. Blood Alcohol -->
+                  <div class="fbc-group-card" style="background:#fff; border:1px solid #e0f2fe; border-radius:8px; padding:10px;">
+                    <span class="fbc-badge" style="background:#e0f2fe; color:#0369a1;">1. Blood Alcohol Test</span>
+                    <div class="field" style="margin-top:6px;">
+                      <label for="shipping_blood_alcohol">Result</label>
+                      <input id="shipping_blood_alcohol" name="shipping_blood_alcohol" value="Not Detected">
+                      <span class="field-hint">Specimen: Blood</span>
+                    </div>
+                  </div>
+
+                  <!-- 2. CRP -->
+                  <div class="fbc-group-card" style="background:#fff; border:1px solid #e0f2fe; border-radius:8px; padding:10px;">
+                    <span class="fbc-badge" style="background:#e0f2fe; color:#0369a1;">2. C-reactive protein (CRP)</span>
+                    <div class="field" style="margin-top:6px;">
+                      <label for="shipping_crp">Result (mg/dL)</label>
+                      <input id="shipping_crp" name="shipping_crp" value="< 06 mg/dL">
+                      <span class="field-hint">Ref: &lt;06 mg/dL • Latex Agglutination</span>
+                    </div>
+                  </div>
+
+                  <!-- 3. ESR -->
+                  <div class="fbc-group-card" style="background:#fff; border:1px solid #e0f2fe; border-radius:8px; padding:10px;">
+                    <span class="fbc-badge" style="background:#e0f2fe; color:#0369a1;">3. ESR</span>
+                    <div class="field" style="margin-top:6px;">
+                      <label for="shipping_esr">Result (mm/1hr)</label>
+                      <input id="shipping_esr" name="shipping_esr" value="03 mm/1hr">
+                      <span class="field-hint">Westregren Method</span>
+                    </div>
+                  </div>
+
+                  <!-- 4. FBS -->
+                  <div class="fbc-group-card" style="background:#fff; border:1px solid #e0f2fe; border-radius:8px; padding:10px;">
+                    <span class="fbc-badge" style="background:#e0f2fe; color:#0369a1;">4. Fasting Blood Sugar</span>
+                    <div class="field" style="margin-top:6px;">
+                      <label for="shipping_fbs">Result (mg/dl)</label>
+                      <input id="shipping_fbs" name="shipping_fbs" value="76 mg/dl">
+                      <span class="field-hint">Ref: 74 - 115 mg/dl</span>
+                    </div>
+                  </div>
+
+                  <!-- 5. Creatinine & eGFR -->
+                  <div class="fbc-group-card" style="background:#fff; border:1px solid #e0f2fe; border-radius:8px; padding:10px;">
+                    <span class="fbc-badge" style="background:#e0f2fe; color:#0369a1;">5. S.Creatinine &amp; eGFR</span>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px;">
+                      <div class="field">
+                        <label for="shipping_creatinine">Creatinine</label>
+                        <input id="shipping_creatinine" name="shipping_creatinine" value="1.2 mg/dL">
+                      </div>
+                      <div class="field">
+                        <label for="shipping_egfr">eGFR</label>
+                        <input id="shipping_egfr" name="shipping_egfr" value="83 ml/min/1.73m2">
+                      </div>
+                    </div>
+                    <span class="field-hint">Ref: 0.6 - 1.3 mg/dL</span>
+                  </div>
+
+                  <!-- 6. Serology (Syphilis & VDRL) -->
+                  <div class="fbc-group-card" style="background:#fff; border:1px solid #e0f2fe; border-radius:8px; padding:10px;">
+                    <span class="fbc-badge" style="background:#e0f2fe; color:#0369a1;">6. Serology (Syphilis &amp; VDRL)</span>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px;">
+                      <div class="field">
+                        <label for="shipping_syphilis">Syphilis</label>
+                        <select id="shipping_syphilis" name="shipping_syphilis">
+                          <option value="Negative" selected>Negative</option>
+                          <option value="Positive">Positive</option>
+                        </select>
+                      </div>
+                      <div class="field">
+                        <label for="shipping_vdrl">VDRL</label>
+                        <select id="shipping_vdrl" name="shipping_vdrl">
+                          <option value="Non Reactive" selected>Non Reactive</option>
+                          <option value="Reactive">Reactive</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 7. Total Cholesterol -->
+                  <div class="fbc-group-card" style="background:#fff; border:1px solid #e0f2fe; border-radius:8px; padding:10px;">
+                    <span class="fbc-badge" style="background:#e0f2fe; color:#0369a1;">7. Total Cholesterol</span>
+                    <div class="field" style="margin-top:6px;">
+                      <label for="shipping_cholesterol">Result (mg/dl)</label>
+                      <input id="shipping_cholesterol" name="shipping_cholesterol" value="228 mg/dl">
+                      <span class="field-hint">Ref: &lt;240 mg/dl</span>
+                    </div>
+                  </div>
+
+                  <!-- 8. SGPT & SGOT -->
+                  <div class="fbc-group-card" style="background:#fff; border:1px solid #e0f2fe; border-radius:8px; padding:10px;">
+                    <span class="fbc-badge" style="background:#e0f2fe; color:#0369a1;">8. Blood for SGPT &amp; SGOT</span>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px;">
+                      <div class="field">
+                        <label for="shipping_sgpt">SGPT (iu/l)</label>
+                        <input id="shipping_sgpt" name="shipping_sgpt" value="26 iu/l">
+                      </div>
+                      <div class="field">
+                        <label for="shipping_sgot">SGOT (iu/l)</label>
+                        <input id="shipping_sgot" name="shipping_sgot" value="30 iu/l">
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 9. Urine Full Report -->
+                  <div class="fbc-group-card" style="background:#fff; border:1px solid #e0f2fe; border-radius:8px; padding:10px;">
+                    <span class="fbc-badge" style="background:#e0f2fe; color:#0369a1;">9. Urine Full Report (UFR)</span>
+                    <div style="margin-top:6px; font-size:12px; line-height:1.5; color:#334155;">
+                      <div>Sugar: <b>Nil</b> • Albumin: <b>Nil</b></div>
+                      <div>Pus Cells: <b>+ 01 - 02 / hpf</b> • Epi: <b>+ A few / hpf</b></div>
+                      <span class="field-hint">Auto-synced with UFR form parameters</span>
+                    </div>
+                  </div>
+
+                  <!-- 10. Urine Drug Screening (12 Drugs) -->
+                  <div class="fbc-group-card" style="background:#fff; border:1px solid #e0f2fe; border-radius:8px; padding:10px;">
+                    <span class="fbc-badge" style="background:#e0f2fe; color:#0369a1;">10. Urine Drug (12-Para Panel)</span>
+                    <div style="margin-top:6px; font-size:12px; line-height:1.5; color:#059669; font-weight:700;">
+                      ✓ All 12 Parameters Negative
+                    </div>
+                    <span class="field-hint">AMP, BAR, BZO, BUP, COC, THC, MTD, MET, MDMA, MOP, PCP, TCA</span>
+                  </div>
+
+                  <!-- 11. HbA1c -->
+                  <div class="fbc-group-card" style="background:#fff; border:1px solid #e0f2fe; border-radius:8px; padding:10px;">
+                    <span class="fbc-badge" style="background:#e0f2fe; color:#0369a1;">11. Haemoglobin A1C</span>
+                    <div class="field" style="margin-top:6px;">
+                      <label for="shipping_hba1c">HbA1c (%)</label>
+                      <input id="shipping_hba1c" name="shipping_hba1c" value="5.1%">
+                      <span class="field-hint">Ref: &lt;6.0% Normal • Ichroma II FIA</span>
+                    </div>
+                  </div>
+
+                  <!-- 12. HCV -->
+                  <div class="fbc-group-card" style="background:#fff; border:1px solid #e0f2fe; border-radius:8px; padding:10px;">
+                    <span class="fbc-badge" style="background:#e0f2fe; color:#0369a1;">12. Hepatitis C [HCV]</span>
+                    <div class="field" style="margin-top:6px;">
+                      <label for="shipping_hcv">Result</label>
+                      <select id="shipping_hcv" name="shipping_hcv">
+                        <option value="Negative" selected>Negative</option>
+                        <option value="Positive">Positive</option>
+                      </select>
+                      <span class="field-hint">Immnochromatography</span>
+                    </div>
+                  </div>
+
+                  <!-- 13. HBsAg -->
+                  <div class="fbc-group-card" style="background:#fff; border:1px solid #e0f2fe; border-radius:8px; padding:10px;">
+                    <span class="fbc-badge" style="background:#e0f2fe; color:#0369a1;">13. Hepatitis B [HBsAg]</span>
+                    <div class="field" style="margin-top:6px;">
+                      <label for="shipping_hbsag">Result</label>
+                      <select id="shipping_hbsag" name="shipping_hbsag">
+                        <option value="Negative" selected>Negative</option>
+                        <option value="Positive">Positive</option>
+                      </select>
+                      <span class="field-hint">Immnochromatography</span>
+                    </div>
+                  </div>
+
+                  <!-- 14. HIV Test -->
+                  <div class="fbc-group-card" style="background:#fff; border:1px solid #e0f2fe; border-radius:8px; padding:10px;">
+                    <span class="fbc-badge" style="background:#e0f2fe; color:#0369a1;">14. HIV I &amp; II Test</span>
+                    <div class="field" style="margin-top:6px;">
+                      <label for="shipping_hiv">Result</label>
+                      <select id="shipping_hiv" name="shipping_hiv">
+                        <option value="Negative" selected>Negative</option>
+                        <option value="Positive">Positive</option>
+                      </select>
+                      <span class="field-hint">Immunochromatography</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="field method">
             <label>Test Method</label>
             <input value="Erba Mannheim Fully Auto Analyzer" readonly>
           </div>
@@ -429,16 +1584,24 @@
           <div class="preview-actions">
             <button class="btn pdf" id="pdfBtn">Download PDF</button>
             <button class="btn pdf-plain" id="pdfPlainBtn" title="Download report without letterhead artwork (for pre-printed paper)">Download PDF (No Letterhead)</button>
-            <button class="btn print-plain" id="printPlainBtn" title="Print report without letterhead artwork (for pre-printed paper)">🖨️ Print (No Letterhead)</button>
+            <button class="btn print-plain" id="printPlainBtn" title="Print report without letterhead artwork (for pre-printed paper)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>Print (No Letterhead)</button>
             <button class="btn excel" id="excelBtn">Download Excel</button>
           </div>
+        </div>
+        <div id="printStatusBar" class="print-status-bar" hidden>
+          <div class="print-status-content">
+            <span class="print-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:3px;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>PRINTED</span>
+            <span id="printStatusText" class="print-status-text">This report has been printed.</span>
+          </div>
+          <span class="print-time-tag" id="printTimeTag"></span>
         </div>
         <div id="previewEmpty" class="empty">
           Search a patient and select a test to view the report preview.
         </div>
-        <div id="reportPreview" class="report-paper" hidden>
-          <div class="paper-title">Laboratory Report</div>
-          <div class="paper-meta">
+        <div id="reportPreview" class="report-paper" style="position:relative;" hidden>
+          <div id="paperPrintedStamp" class="paper-printed-stamp" hidden>&#10003; PRINTED</div>
+          <div id="paperTitle" class="paper-title">Laboratory Report</div>
+          <div id="standardPaperMeta" class="paper-meta">
             <div>
               <p><b>Ref. No</b><span>:</span><em data-preview="ref_no">—</em></p>
               <p><b>Name</b><span>:</span><em data-preview="fname">—</em></p>
@@ -453,20 +1616,451 @@
               <p><b>Specimen</b><span>:</span><em data-preview="specimen">—</em></p>
             </div>
           </div>
-          <h3 data-preview="test_name">Test</h3>
-          <table>
-            <thead>
-              <tr>
-                <th>Test</th>
-                <th>Result</th>
-                <th id="previewRefHead">Reference Range</th>
-              </tr>
-            </thead>
-            <tbody id="previewBody">
-              <tr><td>—</td><td>—</td><td>—</td></tr>
-            </tbody>
-          </table>
-          <div id="previewReference" class="preview-reference"></div>
+
+          <!-- FBC Demographics Header (3 Columns) -->
+          <div id="fbcPaperMeta" class="fbc-paper-meta" hidden>
+            <div class="fbc-meta-col">
+              <p><span class="fbc-meta-lbl">First Name:</span><span id="fbcPrevFirstName">—</span></p>
+              <p><span class="fbc-meta-lbl">Last Name:</span><span id="fbcPrevLastName">—</span></p>
+              <p><span class="fbc-meta-lbl">Gender:</span><span id="fbcPrevGender">—</span></p>
+              <p><span class="fbc-meta-lbl">Diagnosis:</span><span id="fbcPrevDiagnosis"></span></p>
+            </div>
+            <div class="fbc-meta-col">
+              <p><span class="fbc-meta-lbl">Sample Type:</span><span>Blood</span></p>
+              <p><span class="fbc-meta-lbl">Department:</span><span>Heamatology</span></p>
+              <p><span class="fbc-meta-lbl">Patient ID:</span><span id="fbcPrevPatientId">—</span></p>
+            </div>
+            <div class="fbc-meta-col">
+              <p><span class="fbc-meta-lbl">Sample ID:</span><span id="fbcPrevSampleId">—</span></p>
+              <p><span class="fbc-meta-lbl">Run Time:</span><span id="fbcPrevRunTime">—</span></p>
+              <p><span class="fbc-meta-lbl">Age:</span><span id="fbcPrevAge">— Year</span></p>
+            </div>
+          </div>
+          <div id="fbcHeaderDivider" class="fbc-header-divider" hidden></div>
+
+          <h3 data-preview="test_name" id="standardTestTitle">Test</h3>
+          <div id="regularTableWrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Test</th>
+                  <th>Result</th>
+                  <th id="previewRefHead">Reference Range</th>
+                </tr>
+              </thead>
+              <tbody id="previewBody">
+                <tr><td>—</td><td>—</td><td>—</td></tr>
+              </tbody>
+            </table>
+            <div id="previewReference" class="preview-reference"></div>
+          </div>
+
+          <!-- FBC Main Layout Matching Reference Image -->
+          <div id="fbcPreviewContainer" class="h360-report-preview" hidden>
+            <div class="fbc-preview-split">
+              <!-- Left: 22 Parameters Table -->
+              <div class="fbc-left-table-wrap">
+                <table class="fbc-table">
+                  <thead>
+                    <tr>
+                      <th style="width:26%;">Parameter</th>
+                      <th style="width:22%;">Result</th>
+                      <th style="width:26%;">Ref. Range</th>
+                      <th style="width:26%;">Unit</th>
+                    </tr>
+                  </thead>
+                  <tbody id="fbcPreviewBody"></tbody>
+                </table>
+              </div>
+
+              <!-- Right: 3 Stacked Message Boxes -->
+              <div class="fbc-right-boxes">
+                <div class="fbc-msg-box">
+                  <div class="fbc-msg-head">WBC Message</div>
+                  <div class="fbc-msg-body" id="fbcPrevWbcMsg"></div>
+                </div>
+                <div class="fbc-msg-box">
+                  <div class="fbc-msg-head">RBC Message</div>
+                  <div class="fbc-msg-body" id="fbcPrevRbcMsg"></div>
+                </div>
+                <div class="fbc-msg-box">
+                  <div class="fbc-msg-head">PLT Message</div>
+                  <div class="fbc-msg-body" id="fbcPrevPltMsg"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Differential Count (Left below table) -->
+            <div class="fbc-diff-block">
+              <div class="fbc-diff-title">DIFFERENTIAL COUNT:</div>
+              <div class="fbc-diff-rows" id="fbcDiffRows">
+                <div class="fbc-diff-row"><strong>NEUTROPHIL</strong><span>:</span><b id="fbcPrevDiffNeut">65</b><em>(40 - 60 %)</em></div>
+                <div class="fbc-diff-row"><strong>LYMPHOCYTE</strong><span>:</span><b id="fbcPrevDiffLym">30</b><em>(20 - 40 %)</em></div>
+                <div class="fbc-diff-row"><strong>MONOCYTE</strong><span>:</span><b id="fbcPrevDiffMono">03</b><em>(2 - 8 %)</em></div>
+                <div class="fbc-diff-row"><strong>EOSINOPHIL</strong><span>:</span><b id="fbcPrevDiffEos">02</b><em>(1 - 4 %)</em></div>
+                <div class="fbc-diff-row"><strong>BASOPHIL</strong><span>:</span><b id="fbcPrevDiffBaso">00</b><em>(less than 1%)</em></div>
+              </div>
+            </div>
+
+            <!-- 3 Histograms Row (Side by Side) -->
+            <div class="fbc-histos-row">
+              <div class="fbc-histo-cell">
+                <img id="fbcPrevWbcImg" src="/assets/h360-wbc.png" alt="WBC Histogram">
+              </div>
+              <div class="fbc-histo-cell">
+                <img id="fbcPrevRbcImg" src="/assets/h360-rbc.png" alt="RBC Histogram">
+              </div>
+              <div class="fbc-histo-cell">
+                <img id="fbcPrevPltImg" src="/assets/h360-plt.png" alt="PLT Histogram">
+              </div>
+            </div>
+
+            <!-- Signature & Stamp (Left signature + Right blue stamp) -->
+            <div class="fbc-signatures-row">
+              <div class="fbc-sign-left">
+                <img src="/assets/signature.png" alt="Signature" class="fbc-sign-img">
+                <div class="fbc-sign-text">
+                  <div>W.D.Gunarathne</div>
+                  <div>Chief Medical Laboratory Technologist</div>
+                  <div>D.M.L.T.(Sri Lanka) / S.L.M.C 0012</div>
+                  <div>W.H.O.Fellow</div>
+                </div>
+              </div>
+              <div class="fbc-sign-right">
+                <img src="/assets/h360-stamp-exact.png" alt="Stamp" class="fbc-stamp-img">
+              </div>
+            </div>
+          </div>
+
+          <!-- Type 10 B Multi-Report Preview Container -->
+          <div id="type10bPreviewContainer" class="type10b-report-preview" hidden>
+            <div class="fbc-status-banner" style="display:flex; justify-content:space-between; align-items:center; background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; padding:10px 14px; border-radius:8px;">
+              <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:6px;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><strong>Multi-Sheet Medical Package Selected</strong> &mdash; All 4 (or 5) test reports will be saved together in one Excel workbook.</span>
+              <button type="button" class="btn primary btn-xs" id="prevExcelBtn" onclick="$('#excelBtn').click()">Download Excel (.xlsx)</button>
+            </div>
+
+            <div class="type10b-preview-grid">
+              <!-- Card 1: Gonorrhea -->
+              <div class="type10b-preview-card">
+                <div class="type10b-preview-card-head">
+                  <h5>GONORRHEA TEST</h5>
+                  <span class="sheet-tag">Sheet 1: Gonorrhea</span>
+                </div>
+                <div style="font-size:12.5px; line-height:1.6;">
+                  <div style="display:flex; justify-content:space-between;"><b>Test:</b> <span>Gonorrhea</span></div>
+                  <div style="display:flex; justify-content:space-between;"><b>Result:</b> <b style="color:#059669;">Negative</b></div>
+                  <div style="font-size:11px; color:#64748b; margin-top:4px;">[Test Method - Gram's Staining]</div>
+                </div>
+              </div>
+
+              <!-- Card 2: Differential Count -->
+              <div class="type10b-preview-card">
+                <div class="type10b-preview-card-head">
+                  <h5>FBC REPORT (DIFFERENTIAL COUNT - DC)</h5>
+                  <span class="sheet-tag">Sheet 3: FBC</span>
+                </div>
+                <div style="font-size:12.5px; line-height:1.6;">
+                  <div style="display:flex; justify-content:space-between;"><span>NEUTROPHIL:</span> <b id="type10bPrevNeut">45 %</b></div>
+                  <div style="display:flex; justify-content:space-between;"><span>LYMPHOCYTE:</span> <b id="type10bPrevLym">46 %</b></div>
+                  <div style="display:flex; justify-content:space-between;"><span>MONOCYTE:</span> <b id="type10bPrevMono">06 %</b></div>
+                  <div style="display:flex; justify-content:space-between;"><span>EOSINOPHIL:</span> <b id="type10bPrevEos">03 %</b></div>
+                  <div style="display:flex; justify-content:space-between;"><span>BASOPHIL:</span> <b id="type10bPrevBaso">00 %</b></div>
+                  <div style="font-size:11px; color:#0f766e; margin-top:6px; font-weight:600;">[Specimen: Blood | Fully Auto Hematology Analyzer / DC]</div>
+                </div>
+              </div>
+
+              <!-- Card 3: Serology -->
+              <div class="type10b-preview-card">
+                <div class="type10b-preview-card-head">
+                  <h5>SEROLOGY</h5>
+                  <span class="sheet-tag">Sheet 4: serology</span>
+                </div>
+                <div style="font-size:12.5px; line-height:1.6;">
+                  <div style="display:flex; justify-content:space-between;"><span>HIV I &amp; II:</span> <b style="color:#059669;">Negative</b></div>
+                  <div style="display:flex; justify-content:space-between;"><span>Hepatitis B [HBsAg]:</span> <b style="color:#059669;">Negative</b></div>
+                  <div style="display:flex; justify-content:space-between;"><span>Hepatitis C [HCV]:</span> <b style="color:#059669;">Negative</b></div>
+                  <div style="display:flex; justify-content:space-between;"><span>VDRL:</span> <b style="color:#059669;">Non Reactive</b></div>
+                  <div style="display:flex; justify-content:space-between;"><span>Syphilis:</span> <b style="color:#059669;">Negative</b></div>
+                </div>
+              </div>
+
+              <!-- Card 4: Urine Full Report -->
+              <div class="type10b-preview-card">
+                <div class="type10b-preview-card-head">
+                  <h5>URINE FULL REPORT</h5>
+                  <span class="sheet-tag">Sheet 2: UFR</span>
+                </div>
+                <div style="font-size:12.5px; line-height:1.6;">
+                  <div style="display:flex; justify-content:space-between;"><span>Pus Cells:</span> <b>+ 01 - 02 /hpf</b></div>
+                  <div style="display:flex; justify-content:space-between;"><span>Red Cells:</span> <b>Nil</b></div>
+                  <div style="display:flex; justify-content:space-between;"><span>Epithelial Cells:</span> <b>+ A Few /hpf</b></div>
+                  <div style="display:flex; justify-content:space-between;"><span>Albumin / Sugar:</span> <b>Nil / Nil</b></div>
+                  <div style="font-size:11px; color:#64748b; margin-top:4px;">Full 15 parameter chemical &amp; microscopy analysis included.</div>
+                </div>
+              </div>
+
+              <!-- Card 5: Urine Drug (if applicable) -->
+              <div class="type10b-preview-card" id="type10bPrevDrugCard" hidden style="grid-column: 1 / -1;">
+                <div class="type10b-preview-card-head">
+                  <h5>URINE DRUG SCREENING (12 DRUGS)</h5>
+                  <span class="sheet-tag">Sheet 5: Urine Drug</span>
+                </div>
+                <div style="font-size:12px; line-height:1.5;">
+                  <div id="type10bPrevDrugGrid" style="display:grid; grid-template-columns:1fr 1fr; gap:6px 20px; margin-bottom:8px;">
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px dashed #e2e8f0; padding-bottom:2px;"><span>Amphetamine (AMP)</span><b style="color:#059669;">Negative</b></div>
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px dashed #e2e8f0; padding-bottom:2px;"><span>Barbiturates (BAR)</span><b style="color:#059669;">Negative</b></div>
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px dashed #e2e8f0; padding-bottom:2px;"><span>Benzodiazepine (BZO)</span><b style="color:#059669;">Negative</b></div>
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px dashed #e2e8f0; padding-bottom:2px;"><span>Buprenorphine (BUP)</span><b style="color:#059669;">Negative</b></div>
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px dashed #e2e8f0; padding-bottom:2px;"><span>Cocaine (COC)</span><b style="color:#059669;">Negative</b></div>
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px dashed #e2e8f0; padding-bottom:2px;"><span>Marijuana (THC)</span><b style="color:#059669;">Negative</b></div>
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px dashed #e2e8f0; padding-bottom:2px;"><span>Methadone (MTD)</span><b style="color:#059669;">Negative</b></div>
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px dashed #e2e8f0; padding-bottom:2px;"><span>Methamphetamine (MET)</span><b style="color:#059669;">Negative</b></div>
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px dashed #e2e8f0; padding-bottom:2px;"><span>Methylenedioxymethamphetamine (MDMA)</span><b style="color:#059669;">Negative</b></div>
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px dashed #e2e8f0; padding-bottom:2px;"><span>Morphine (MOP)</span><b style="color:#059669;">Negative</b></div>
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px dashed #e2e8f0; padding-bottom:2px;"><span>Tramadol (TML)</span><b style="color:#059669;">Negative</b></div>
+                    <div style="display:flex; justify-content:space-between; border-bottom:1px dashed #e2e8f0; padding-bottom:2px;"><span>Tricyclic Antidepressants (TCA)</span><b style="color:#059669;">Negative</b></div>
+                  </div>
+                  <div style="font-size:11px; color:#64748b;">[Test Method - Immnochromatography]</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Type 7 Multi-Report Preview Container -->
+          <div id="type7PreviewContainer" class="type10b-report-preview" hidden>
+            <div class="fbc-status-banner" style="display:flex; justify-content:space-between; align-items:center; background:#f0fdf4; border:1px solid #bbf7d0; color:#166534; padding:10px 14px; border-radius:8px;">
+              <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:6px;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><strong>Type 7 Medical Package Selected</strong> &mdash; 4 reports (UFR, TB, Brucellosis with Date+1, and HIV with Full Name) will be saved together in one Excel workbook.</span>
+              <button type="button" class="btn primary btn-xs" id="prevExcelBtnType7" onclick="$('#excelBtn').click()">Download Excel (.xlsx)</button>
+            </div>
+
+            <div class="type10b-preview-grid">
+              <!-- Card 1: Urine Full Report -->
+              <div class="type10b-preview-card">
+                <div class="type10b-preview-card-head">
+                  <h5>URINE FULL REPORT</h5>
+                  <span class="sheet-tag">Sheet 1: UFR</span>
+                </div>
+                <div style="font-size:12.5px; line-height:1.6;">
+                  <div style="display:flex; justify-content:space-between;"><b>Specific Gravity:</b> <span id="type7PrevSG" style="font-weight:700; color:#2563eb;">1.015</span></div>
+                  <div style="display:flex; justify-content:space-between;"><b>Reaction (pH):</b> <span>6.0</span></div>
+                  <div style="display:flex; justify-content:space-between;"><b>Sugar / Albumin:</b> <span>Nil / Nil</span></div>
+                  <div style="display:flex; justify-content:space-between;"><b>Pus Cells:</b> <span>+ 01 - 02 /hpf</span></div>
+                  <div style="display:flex; justify-content:space-between;"><b>Epithelial:</b> <span>+ A Few /hpf</span></div>
+                  <div style="font-size:11px; color:#64748b; margin-top:4px;">Specimen: Urine | Random SG Active</div>
+                </div>
+              </div>
+
+              <!-- Card 2: Tuberculosis Rapid Test -->
+              <div class="type10b-preview-card">
+                <div class="type10b-preview-card-head">
+                  <h5>TUBERCULOSIS RAPID TEST</h5>
+                  <span class="sheet-tag">Sheet 2: TB</span>
+                </div>
+                <div style="font-size:12.5px; line-height:1.6;">
+                  <div style="display:flex; justify-content:space-between;"><b>Test:</b> <span>TB Test</span></div>
+                  <div style="display:flex; justify-content:space-between;"><b>Result:</b> <b id="type7PrevTb" style="color:#059669;">Negative</b></div>
+                  <div style="display:flex; justify-content:space-between;"><b>Specimen:</b> <span>Blood</span></div>
+                  <div style="font-size:11px; color:#64748b; margin-top:4px;">(Test Method - Immunochromatography)</div>
+                </div>
+              </div>
+
+              <!-- Card 3: Brucellosis Test -->
+              <div class="type10b-preview-card">
+                <div class="type10b-preview-card-head">
+                  <h5>BRUCELLOSIS TEST</h5>
+                  <span class="sheet-tag">Sheet 3: Brucellosis</span>
+                </div>
+                <div style="font-size:12.5px; line-height:1.6;">
+                  <div style="display:flex; justify-content:space-between;"><b>Test:</b> <span>BRUCELLA Test</span></div>
+                  <div style="display:flex; justify-content:space-between;"><b>Result:</b> <b id="type7PrevBru" style="color:#059669;">Negative</b></div>
+                  <div style="display:flex; justify-content:space-between;"><b>Date:</b> <span id="type7PrevBruDate" style="color:#2563eb; font-weight:700;">Medical Date + 1 Day</span></div>
+                  <div style="font-size:11px; color:#64748b; margin-top:4px;">(Test Method - Immunochromatography)</div>
+                </div>
+              </div>
+
+              <!-- Card 4: HIV Ag & Ab Test -->
+              <div class="type10b-preview-card">
+                <div class="type10b-preview-card-head">
+                  <h5>HIV Ag &amp; Ab TEST</h5>
+                  <span class="sheet-tag">Sheet 4: HIV</span>
+                </div>
+                <div style="font-size:12.5px; line-height:1.6;">
+                  <div style="display:flex; justify-content:space-between;"><b>Test:</b> <span>HIV I &amp; II</span></div>
+                  <div style="display:flex; justify-content:space-between;"><b>Result:</b> <b id="type7PrevHiv" style="color:#059669;">Negative</b></div>
+                  <div style="display:flex; justify-content:space-between;"><b>Name:</b> <span id="type7PrevHivName" style="color:#059669; font-weight:700;">Full Patient Name</span></div>
+                  <div style="font-size:11px; color:#64748b; margin-top:4px;">[Test Method - Antigen Antibody Immunochromatography]</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          
+            <!-- Type 11 Multi-Report Preview Container -->
+            <div id="type11PreviewContainer" class="type10b-report-preview" hidden>
+              <div class="fbc-status-banner" style="display:flex; justify-content:space-between; align-items:center; background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; padding:10px 14px; border-radius:8px;">
+                <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:6px;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg><strong>Multi-Sheet Medical Package Selected</strong> &mdash; All 5 test reports will be saved together in one Excel workbook.</span>
+                <button type="button" class="btn primary btn-xs" id="prevExcelBtnType11" onclick="document.getElementById('excelBtn').click()">Download Excel (.xlsx)</button>
+              </div>
+
+              <div class="type10b-preview-grid">
+                <!-- Card 1: Fasting Blood Sugar -->
+                <div class="type10b-preview-card">
+                  <div class="type10b-preview-card-head">
+                    <h5>FASTING BLOOD SUGAR (FBS)</h5>
+                    <span class="sheet-tag">Sheet 1: FBS</span>
+                  </div>
+                  <div style="font-size:12.5px; line-height:1.6;">
+                    <div style="display:flex; justify-content:space-between;"><b>Investigation:</b> <span>Fasting Blood Sugar</span></div>
+                    <div style="display:flex; justify-content:space-between;"><b>Result:</b> <b id="type11PrevFbs" style="color:#0f766e;">75 mg/dl</b></div>
+                    <div style="display:flex; justify-content:space-between;"><b>Ref. Range:</b> <span>74 - 115 mg/dl</span></div>
+                    <div style="font-size:11px; color:#64748b; margin-top:4px;">[Test Method - Spectrophotometry - End point]</div>
+                  </div>
+                </div>
+
+                <!-- Card 2: Blood for SGPT & SGOT -->
+                <div class="type10b-preview-card">
+                  <div class="type10b-preview-card-head">
+                    <h5>BLOOD FOR SGPT &amp; SGOT</h5>
+                    <span class="sheet-tag">Sheet 2: SGPT &amp; SGOT</span>
+                  </div>
+                  <div style="font-size:12.5px; line-height:1.6;">
+                    <div style="display:flex; justify-content:space-between;"><span>SGPT:</span> <b id="type11PrevSgpt">10 iu/l</b></div>
+                    <div style="display:flex; justify-content:space-between;"><span>SGOT:</span> <b id="type11PrevSgot">13 iu/l</b></div>
+                    <div style="font-size:11px; color:#64748b; margin-top:4px;">[Test Method - Spectrophotometry - Kinetic]</div>
+                  </div>
+                </div>
+
+                <!-- Card 3: Urine Full Report -->
+                <div class="type10b-preview-card">
+                  <div class="type10b-preview-card-head">
+                    <h5>URINE FULL REPORT</h5>
+                    <span class="sheet-tag">Sheet 3: UFR</span>
+                  </div>
+                  <div style="font-size:12.5px; line-height:1.6;">
+                    <div style="display:flex; justify-content:space-between;"><b>Routine &amp; Microscopy:</b> <b style="color:#059669;">Normal</b></div>
+                    <div style="display:flex; justify-content:space-between;"><b>Appearance / Colour:</b> <span>Clear / Pale Yellow</span></div>
+                    <div style="font-size:11px; color:#64748b; margin-top:4px;">[Test Method - Centrifuged Urine Microscopy &amp; Dipstick]</div>
+                  </div>
+                </div>
+
+                <!-- Card 4: Gamma GT -->
+                <div class="type10b-preview-card">
+                  <div class="type10b-preview-card-head">
+                    <h5>GAMMA GT</h5>
+                    <span class="sheet-tag">Sheet 4: Gamma GT</span>
+                  </div>
+                  <div style="font-size:12.5px; line-height:1.6;">
+                    <div style="display:flex; justify-content:space-between;"><b>Investigation:</b> <span>Gamma GT</span></div>
+                    <div style="display:flex; justify-content:space-between;"><b>Result:</b> <b id="type11PrevGgt" style="color:#0f766e;">18 U/L</b></div>
+                    <div style="display:flex; justify-content:space-between;"><b>Ref. Range:</b> <span>5 - 40 U/L</span></div>
+                    <div style="font-size:11px; color:#64748b; margin-top:4px;">[Test Method - Spectrophotometry - Kinetic]</div>
+                  </div>
+                </div>
+
+                <!-- Card 5: Lipid Profile -->
+                <div class="type10b-preview-card">
+                  <div class="type10b-preview-card-head">
+                    <h5>LIPID PROFILE</h5>
+                    <span class="sheet-tag">Sheet 5: Lipid Profile</span>
+                  </div>
+                  <div style="font-size:12.5px; line-height:1.6;">
+                    <div style="display:flex; justify-content:space-between;"><span>Cholesterol:</span> <b id="type11PrevChol">176 mg/dl</b></div>
+                    <div style="display:flex; justify-content:space-between;"><span>HDL:</span> <b id="type11PrevHdl">44 mg/dl</b></div>
+                    <div style="display:flex; justify-content:space-between;"><span>LDL:</span> <b id="type11PrevLdl">112.4 mg/dl</b></div>
+                    <div style="display:flex; justify-content:space-between;"><span>Triglyceride:</span> <b id="type11PrevTrig">98 mg/dl</b></div>
+                    <div style="font-size:11px; color:#64748b; margin-top:4px;">[Test Method - Spectrophotometry - End point]</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Custom Medical Package Multi-Report Preview Container -->
+          
+            <!-- Shipping Package Preview Container -->
+            <div id="shippingPreviewContainer" class="type10b-report-preview" hidden>
+              <div class="fbc-status-banner" style="display:flex; justify-content:space-between; align-items:center; background:#f0f9ff; border:1px solid #bae6fd; color:#0369a1; padding:12px 16px; border-radius:8px; margin-bottom:14px;">
+                <span>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:8px;"><path d="M2 21h20M2 17h20M4 17l2-10h12l2 10M12 7V3M9 3h6"/></svg>
+                  <strong>Shipping Medical Package (Type 12 - 1)</strong> &mdash; 14 test reports bundled into multi-sheet Excel &amp; PDF.
+                </span>
+                <button type="button" class="btn primary btn-xs" onclick="document.getElementById('excelBtn').click()" style="padding:6px 14px; font-weight:700;">&#8595; Download 14-Sheet Excel</button>
+              </div>
+              <div class="type10b-preview-grid" id="shippingPrevGrid">
+                <div class="type10b-preview-card">
+                  <div class="type10b-card-header"><span class="type10b-badge">1. Blood Alcohol</span><h4>Alcohol Test</h4></div>
+                  <div style="display:flex; justify-content:space-between;"><b>Result:</b> <b id="shipPrevAlcohol" style="color:#059669;">Not Detected</b></div>
+                </div>
+                <div class="type10b-preview-card">
+                  <div class="type10b-card-header"><span class="type10b-badge">2. CRP</span><h4>C-reactive protein</h4></div>
+                  <div style="display:flex; justify-content:space-between;"><b>Result:</b> <b id="shipPrevCrp" style="color:#059669;">&lt; 06 mg/dL</b></div>
+                </div>
+                <div class="type10b-preview-card">
+                  <div class="type10b-card-header"><span class="type10b-badge">3. ESR</span><h4>ESR</h4></div>
+                  <div style="display:flex; justify-content:space-between;"><b>Result:</b> <b id="shipPrevEsr" style="color:#059669;">03 mm/1hr</b></div>
+                </div>
+                <div class="type10b-preview-card">
+                  <div class="type10b-card-header"><span class="type10b-badge">4. FBS</span><h4>Fasting Blood Sugar</h4></div>
+                  <div style="display:flex; justify-content:space-between;"><b>Result:</b> <b id="shipPrevFbs" style="color:#059669;">76 mg/dl</b></div>
+                </div>
+                <div class="type10b-preview-card">
+                  <div class="type10b-card-header"><span class="type10b-badge">5. S.Creatinine</span><h4>Creatinine &amp; eGFR</h4></div>
+                  <div style="display:flex; justify-content:space-between;"><span>Creatinine:</span> <b id="shipPrevCreatinine">1.2 mg/dL</b></div>
+                  <div style="display:flex; justify-content:space-between;"><span>eGFR:</span> <b id="shipPrevEgfr">83 ml/min/1.73m2</b></div>
+                </div>
+                <div class="type10b-preview-card">
+                  <div class="type10b-card-header"><span class="type10b-badge">6. Serology</span><h4>Syphilis &amp; VDRL</h4></div>
+                  <div style="display:flex; justify-content:space-between;"><span>Syphilis:</span> <b id="shipPrevSyphilis">Negative</b></div>
+                  <div style="display:flex; justify-content:space-between;"><span>VDRL:</span> <b id="shipPrevVdrl">Non Reactive</b></div>
+                </div>
+                <div class="type10b-preview-card">
+                  <div class="type10b-card-header"><span class="type10b-badge">7. Cholesterol</span><h4>Total Cholesterol</h4></div>
+                  <div style="display:flex; justify-content:space-between;"><b>Result:</b> <b id="shipPrevChol">228 mg/dl</b></div>
+                </div>
+                <div class="type10b-preview-card">
+                  <div class="type10b-card-header"><span class="type10b-badge">8. Liver Enzymes</span><h4>SGPT &amp; SGOT</h4></div>
+                  <div style="display:flex; justify-content:space-between;"><span>SGPT:</span> <b id="shipPrevSgpt">26 iu/l</b></div>
+                  <div style="display:flex; justify-content:space-between;"><span>SGOT:</span> <b id="shipPrevSgot">30 iu/l</b></div>
+                </div>
+                <div class="type10b-preview-card">
+                  <div class="type10b-card-header"><span class="type10b-badge">9. UFR</span><h4>Urine Full Report</h4></div>
+                  <div style="font-size:12px;">Pus: <b>+ 01-02/hpf</b> • Sugar: <b>Nil</b> • Albumin: <b>Nil</b></div>
+                </div>
+                <div class="type10b-preview-card">
+                  <div class="type10b-card-header"><span class="type10b-badge">10. Urine Drug</span><h4>12-Para Drug Panel</h4></div>
+                  <div style="color:#059669; font-weight:700; font-size:12px;">✓ 12 Drugs All Negative</div>
+                </div>
+                <div class="type10b-preview-card">
+                  <div class="type10b-card-header"><span class="type10b-badge">11. HbA1c</span><h4>Haemoglobin A1C</h4></div>
+                  <div style="display:flex; justify-content:space-between;"><b>Result:</b> <b id="shipPrevHba1c" style="color:#059669;">5.1%</b></div>
+                </div>
+                <div class="type10b-preview-card">
+                  <div class="type10b-card-header"><span class="type10b-badge">12. HCV</span><h4>Hepatitis C</h4></div>
+                  <div style="display:flex; justify-content:space-between;"><b>Result:</b> <b id="shipPrevHcv" style="color:#059669;">Negative</b></div>
+                </div>
+                <div class="type10b-preview-card">
+                  <div class="type10b-card-header"><span class="type10b-badge">13. HBsAg</span><h4>Hepatitis B</h4></div>
+                  <div style="display:flex; justify-content:space-between;"><b>Result:</b> <b id="shipPrevHbsag" style="color:#059669;">Negative</b></div>
+                </div>
+                <div class="type10b-preview-card">
+                  <div class="type10b-card-header"><span class="type10b-badge">14. HIV</span><h4>HIV I &amp; II</h4></div>
+                  <div style="display:flex; justify-content:space-between;"><b>Result:</b> <b id="shipPrevHiv" style="color:#059669;">Negative</b></div>
+                </div>
+              </div>
+            </div>
+
+            <div id="customPackagePreviewContainer" class="type10b-report-preview" hidden>
+            <div class="fbc-status-banner" style="display:flex; justify-content:space-between; align-items:center; background:#eff6ff; border:1px solid #bfdbfe; color:#1e40af; padding:12px 16px; border-radius:8px; margin-bottom:14px;">
+              <span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:8px;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                <strong id="customPkgPrevTitle">Medical Package Selected</strong> &mdash; <span id="customPkgPrevCount">0</span> test reports bundled together.
+              </span>
+              <button type="button" class="btn primary btn-xs" id="prevExcelBtnCustomPkg" onclick="document.getElementById('excelBtn').click()" style="padding:6px 14px; font-weight:700;">&#8595; Download Excel (.xlsx)</button>
+            </div>
+            <div class="type10b-preview-grid" id="customPkgPrevGrid">
+              <!-- Cards populated dynamically by updatePreview() in app.js -->
+            </div>
+          </div>
+
           <p id="previewConfirm" class="confirm">[Repeated and Confirmed]</p>
           <p class="method-line">[Test Method - Erba Mannheim Fully Auto Analyzer]</p>
           <p class="end-report">**End of Report**</p>
@@ -474,12 +2068,364 @@
       </section>
 
       <footer>
-        NeoSys Local Generator · Search, preview and download locally.<br>
+        NeoSys Local Generator • Search, preview and download locally.<br>
         <span class="copyright">Copyright © DareDevil Solution INC by Chathura Harshana Jr</span>
       </footer>
     </main>
   </div>
 
-  <script src="app.js?v=20261014-sgpt-sgot-layout"></script>
+  <!-- Super Admin Security Modal -->
+  <div id="superAdminModal" class="modal-backdrop" hidden>
+    <div class="modal-card super-admin-card" role="dialog" aria-modal="true" aria-labelledby="superAdminModalTitle">
+      
+      <!-- Modal Header -->
+      <div class="modal-header super-admin-header">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div class="super-admin-shield-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 id="superAdminModalTitle" style="margin:0; font-size:17px; font-weight:700; color:#0f172a;">Super Admin Security Console</h3>
+            <p style="margin:2px 0 0; font-size:12px; color:#64748b;">Laboratory report access controls, testing permissions &amp; security guardrails</p>
+          </div>
+        </div>
+        <button type="button" class="modal-close-btn" id="closeSuperAdminModalBtn" aria-label="Close">&times;</button>
+      </div>
+
+      <!-- Login View (When Not Authenticated) -->
+      <div id="superAdminLoginView" class="super-admin-login-body">
+        <div class="admin-login-box">
+          <div style="text-align:center; margin-bottom:20px;">
+            <div class="admin-key-avatar">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </div>
+            <h4 style="margin:10px 0 4px; font-size:16px; font-weight:700;">Super Admin Authentication</h4>
+            <p style="margin:0; font-size:12.5px; color:#64748b;">Enter Super Admin username and password to access laboratory security settings.</p>
+          </div>
+          <div id="superAdminLoginErr" class="login-error" hidden style="margin-bottom:12px;"></div>
+          <form id="superAdminLoginForm">
+            <div class="field" style="margin-bottom:12px;">
+              <label for="adminUsernameInput" style="font-size:12.5px; font-weight:600;">Super Admin Username</label>
+              <input id="adminUsernameInput" type="text" placeholder="e.g. Chathura" autocomplete="username" required style="width:100%; padding:10px 12px; font-size:14px; border-radius:6px; border:1px solid #cbd5e1;">
+            </div>
+            <div class="field" style="margin-bottom:14px;">
+              <label for="adminPassInput" style="font-size:12.5px; font-weight:600;">Master Password</label>
+              <input id="adminPassInput" type="password" placeholder="Enter master password" autocomplete="current-password" required style="width:100%; padding:10px 12px; font-size:14px; border-radius:6px; border:1px solid #cbd5e1;">
+            </div>
+            <button type="submit" class="btn primary" id="adminLoginSubmitBtn" style="width:100%; justify-content:center; padding:10px; font-weight:600;">Sign In as Super Admin</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Authenticated Console View -->
+      <div id="superAdminConsoleView" class="super-admin-console-body" hidden>
+        
+        <!-- Emergency Lockdown Alert Strip -->
+        <div class="admin-alert-strip" id="adminLockdownStrip">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:14px;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <label class="switch-control" style="margin:0;">
+                <input type="checkbox" id="adminLockAllToggle">
+                <span class="switch-slider danger"></span>
+              </label>
+              <div>
+                <strong style="display:block; font-size:13.5px;" id="adminLockLabel">Emergency System Lockdown: OFF</strong>
+                <span style="font-size:11.5px; color:#64748b;" id="adminLockSub">Turn ON to freeze all report generation immediately across the entire lab.</span>
+              </div>
+            </div>
+            <span class="badge" id="adminLockIndicatorBadge" style="background:#e2e8f0; color:#475569; font-weight:700; padding:4px 8px; border-radius:4px; font-size:11px;">SYSTEM UNLOCKED</span>
+          </div>
+          <div id="adminLockReasonBox" style="display:none; margin-top:10px;">
+            <input id="adminLockReasonInput" placeholder="Lockdown reason (e.g. Quality audit in progress / System maintenance)" style="width:100%; font-size:12px; padding:8px 12px; border:1px solid #f87171; border-radius:6px; background:#fff;">
+          </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="admin-nav-tabs">
+          <button type="button" class="admin-tab-btn active" data-tab="tabTests">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            Test Permissions (<span id="enabledTestsCount">21</span> Active)
+          </button>
+          <button type="button" class="admin-tab-btn" data-tab="tabCustomTests">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+            Custom Test Reports (<span id="customTestsTabCount">0</span>)
+          </button>
+          <button type="button" class="admin-tab-btn" data-tab="tabExports">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export Policies
+          </button>
+          <button type="button" class="admin-tab-btn" data-tab="tabCredentials">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            Credentials
+          </button>
+          <button type="button" class="admin-tab-btn" data-tab="tabAudit">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Security Audit Log
+          </button>
+        </div>
+
+        <!-- Tab 1: Test Permissions Matrix -->
+        <div id="tabTests" class="admin-tab-pane active">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <div>
+              <h5 style="margin:0; font-size:13.5px; font-weight:700;">Laboratory Report Generation Matrix</h5>
+              <span style="font-size:12px; color:#64748b;">Toggle which tests and packages lab staff are permitted to generate.</span>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button type="button" class="btn secondary btn-xs" id="adminEnableAllTestsBtn">Enable All</button>
+              <button type="button" class="btn secondary btn-xs" id="adminDisableAllTestsBtn">Disable All</button>
+            </div>
+          </div>
+
+          <!-- Dynamic Categorized Test Grid -->
+          <div id="adminTestsContainer" class="admin-tests-category-grid"></div>
+        </div>
+
+        <!-- Tab 2: Custom Test Reports Management -->
+        <div id="tabCustomTests" class="admin-tab-pane">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <div>
+              <h5 style="margin:0; font-size:14px; font-weight:700;">Custom Test Report Designer &amp; Manager</h5>
+              <span style="font-size:12px; color:#64748b;">Add new laboratory test reports, configure report categories &amp; result types, and enable instant printing.</span>
+            </div>
+          </div>
+
+          <!-- Add/Edit Custom Test Card -->
+          <div class="admin-settings-group" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px; margin-bottom:16px;">
+            <h6 style="margin:0 0 12px; font-size:13px; font-weight:700; color:#1e293b; display:flex; align-items:center; gap:6px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+              Add New Custom Test Report / නව පරීක්ෂණ වාර්තාවක් එක් කරන්න
+            </h6>
+            
+            <form id="adminCustomTestForm">
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px; margin-bottom:12px;">
+                <!-- Test Name -->
+                <div class="field">
+                  <label for="adminCtName" style="font-size:12px; font-weight:600;">Test Name (Unique ID / නම) *</label>
+                  <input id="adminCtName" type="text" required placeholder="e.g. Dengue NS1 Antigen, Malaria Pf/Pv" style="font-size:12.5px;">
+                </div>
+
+                <!-- Test Report Category Dropdown (Separate Dropdown 1) -->
+                <div class="field">
+                  <label for="adminCtCategory" style="font-size:12px; font-weight:600; color:#2563eb;">Test Category Dropdown (වර්ගය) *</label>
+                  <select id="adminCtCategory" style="font-size:12.5px; border-color:#93c5fd; background:#f0f7ff;">
+                    <option value="Infectious Diseases / ක්ෂුද්‍රජීවී සහ ආසාදන">Infectious Diseases / ක්ෂුද්‍රජීවී සහ ආසාදන</option>
+                    <option value="Serology & Immunology / ප්‍රතිශක්තිකරණ">Serology &amp; Immunology / ප්‍රතිශක්තිකරණ</option>
+                    <option value="Rapid Diagnostic Tests / කඩිනම් පරීක්ෂණ" selected>Rapid Diagnostic Tests / කඩිනම් පරීක්ෂණ</option>
+                    <option value="General Biochemistry / රසායන පරීක්ෂණ">General Biochemistry / රසායන පරීක්ෂණ</option>
+                    <option value="Endocrinology & Hormones / හෝමෝන">Endocrinology &amp; Hormones / හෝමෝන</option>
+                    <option value="Clinical Pathology / මුත්‍ර හා ශාරීරික තරල">Clinical Pathology / මුත්‍ර හා ශාරීරික තරල</option>
+                    <option value="Hematology / රුධිර පරීක්ෂණ">Hematology / රුධිර පරීක්ෂණ</option>
+                    <option value="Special Packages / විශේෂ පැකේජ">Special Packages / විශේෂ පැකේජ</option>
+                  </select>
+                </div>
+
+                <!-- Result Type Dropdown (Separate Dropdown 2) -->
+                <div class="field">
+                  <label for="adminCtType" style="font-size:12px; font-weight:600; color:#16a34a;">Result Type Dropdown (ප්‍රතිඵල වර්ගය) *</label>
+                  <select id="adminCtType" style="font-size:12.5px; border-color:#86efac; background:#f0fdf4;">
+                    <option value="pos_neg" selected>Negative / Positive (කඩිනම් පරීක්ෂණ)</option>
+                    <option value="reactive_nonreactive">Non-Reactive / Reactive (ප්‍රතිදේහ/ප්‍රතිදේහජනක)</option>
+                    <option value="normal_abnormal">Normal / Abnormal (සාමාන්‍ය/අසාමාන්‍ය)</option>
+                    <option value="numeric">Numeric Value (අගයක් සහ Units)</option>
+                    <option value="custom_options">Custom Choices (වෙනත් තේරීම්)</option>
+                  </select>
+                </div>
+
+                <!-- Display Label on Report -->
+                <div class="field">
+                  <label for="adminCtLabel" style="font-size:12px; font-weight:600;">Display Label on Report (වාර්තාවේ පෙන්වන නම)</label>
+                  <input id="adminCtLabel" type="text" placeholder="e.g. DENGUE NS1 Ag RAPID TEST" style="font-size:12.5px;">
+                </div>
+              </div>
+
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin-bottom:12px;">
+                <!-- Result Options (for dropdown types) -->
+                <div class="field" id="adminCtOptionsWrap">
+                  <label for="adminCtOptions" style="font-size:12px; font-weight:600;">Result Dropdown Options (Comma separated)</label>
+                  <input id="adminCtOptions" type="text" value="Negative, Positive" placeholder="e.g. Negative, Positive" style="font-size:12.5px;">
+                </div>
+
+                <!-- Units -->
+                <div class="field">
+                  <label for="adminCtUnit" style="font-size:12px; font-weight:600;">Unit of Measurement (ඒකකය)</label>
+                  <input id="adminCtUnit" type="text" placeholder="e.g. mg/dL, U/L, index (optional)" style="font-size:12.5px;">
+                </div>
+
+                <!-- Reference Range -->
+                <div class="field">
+                  <label for="adminCtRef" style="font-size:12px; font-weight:600;">Reference Range (නිරෝගී සීමාව)</label>
+                  <input id="adminCtRef" type="text" placeholder="e.g. Negative or < 1.0 (optional)" style="font-size:12.5px;">
+                </div>
+
+                <!-- Method -->
+                <div class="field">
+                  <label for="adminCtMethod" style="font-size:12px; font-weight:600;">Test Method (ක්‍රමවේදය)</label>
+                  <input id="adminCtMethod" type="text" value="Immunochromatography" placeholder="e.g. Immunochromatography" style="font-size:12.5px;">
+                </div>
+
+                <!-- Specimen -->
+                <div class="field">
+                  <label for="adminCtSpecimen" style="font-size:12px; font-weight:600;">Specimen (නියැදිය)</label>
+                  <select id="adminCtSpecimen" style="font-size:12.5px;">
+                    <option value="Blood" selected>Blood / Serum / Plasma</option>
+                    <option value="Serum">Serum</option>
+                    <option value="Plasma">Plasma</option>
+                    <option value="Urine">Urine</option>
+                    <option value="Stool">Stool</option>
+                    <option value="Swab">Swab</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="display:flex; justify-content:flex-end; gap:8px;">
+                <button type="submit" class="btn primary" id="adminSaveCustomTestBtn" style="font-size:12.5px; padding:7px 18px;">
+                  + Add Custom Test / වාර්තාව එක් කරන්න
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Existing Custom Tests Table -->
+          <div>
+            <h6 style="margin:0 0 8px; font-size:13px; font-weight:700; color:#1e293b;">Active Custom Reports / ක්‍රියාත්මක වාර්තා ලැයිස්තුව</h6>
+            <div class="admin-audit-table-wrap" style="max-height:260px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:8px;">
+              <table class="admin-audit-table">
+                <thead>
+                  <tr>
+                    <th>Test Name &amp; Label</th>
+                    <th>Category</th>
+                    <th>Type &amp; Options</th>
+                    <th>Method &amp; Specimen</th>
+                    <th>Status</th>
+                    <th style="text-align:right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="adminCustomTestsTableBody">
+                  <tr>
+                    <td colspan="6" style="text-align:center; color:#94a3b8; padding:16px;">No custom test reports created yet.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Export Policies -->
+        <div id="tabExports" class="admin-tab-pane">
+          <div class="admin-settings-group">
+            <h5 style="margin:0 0 8px; font-size:13.5px; font-weight:700;">Export Format Restrictions</h5>
+            <div class="admin-setting-row">
+              <div>
+                <strong>Allow PDF Report Downloads</strong>
+                <p style="margin:2px 0 0; font-size:11.5px; color:#64748b;">Enables A4 PDF generation with official letterhead &amp; signatures.</p>
+              </div>
+              <label class="switch-control">
+                <input type="checkbox" id="adminAllowPdfToggle" checked>
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+            <div class="admin-setting-row">
+              <div>
+                <strong>Allow Excel (.xlsx) Report Downloads</strong>
+                <p style="margin:2px 0 0; font-size:11.5px; color:#64748b;">Enables multi-sheet Excel report exports (Type 7, Type 10 B, FBS, etc.).</p>
+              </div>
+              <label class="switch-control">
+                <input type="checkbox" id="adminAllowExcelToggle" checked>
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+            <div class="admin-setting-row">
+              <div>
+                <strong>Allow Word (.docx) Report Downloads</strong>
+                <p style="margin:2px 0 0; font-size:11.5px; color:#64748b;">Enables formatted Microsoft Word patient summary export.</p>
+              </div>
+              <label class="switch-control">
+                <input type="checkbox" id="adminAllowWordToggle" checked>
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+            <div class="admin-setting-row">
+              <div>
+                <strong>Allow Letterhead Removal (Plain Paper Stationery Mode)</strong>
+                <p style="margin:2px 0 0; font-size:11.5px; color:#64748b;">When turned OFF, users can only download reports WITH official NeoSys letterhead.</p>
+              </div>
+              <label class="switch-control">
+                <input type="checkbox" id="adminAllowNoLetterheadToggle" checked>
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Credentials -->
+        <div id="tabCredentials" class="admin-tab-pane">
+          <div class="admin-settings-group" style="max-width:480px;">
+            <h5 style="margin:0 0 12px; font-size:13.5px; font-weight:700;">Update Super Admin Master Credentials</h5>
+            <div id="adminPassChangeNotice" class="login-error" hidden style="margin-bottom:10px;"></div>
+            <form id="adminPasswordChangeForm">
+              <div class="field" style="margin-bottom:10px;">
+                <label for="adminCurrentPass" style="font-size:12px; font-weight:600;">Current Password</label>
+                <input id="adminCurrentPass" type="password" required placeholder="Enter current master password">
+              </div>
+              <div class="field" style="margin-bottom:10px;">
+                <label for="adminNewPass" style="font-size:12px; font-weight:600;">New Password (Min 4 characters)</label>
+                <input id="adminNewPass" type="password" required minlength="4" placeholder="Enter new password">
+              </div>
+              <div class="field" style="margin-bottom:14px;">
+                <label for="adminNewPin" style="font-size:12px; font-weight:600;">Quick PIN Code (4-6 Digits)</label>
+                <input id="adminNewPin" type="text" maxlength="6" placeholder="e.g. 1234">
+              </div>
+              <button type="submit" class="btn primary" id="adminSavePassBtn">Update Credentials</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Tab 4: Security Audit Log -->
+        <div id="tabAudit" class="admin-tab-pane">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div>
+              <h5 style="margin:0; font-size:13.5px; font-weight:700;">Real-Time Security Audit Trail</h5>
+              <span style="font-size:12px; color:#64748b;">Chronological log of all generated reports, blocked requests &amp; administrative actions.</span>
+            </div>
+            <button type="button" class="btn secondary btn-xs" id="adminClearAuditBtn">Clear Audit Log</button>
+          </div>
+          <div class="admin-audit-table-wrap">
+            <table class="admin-audit-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Action</th>
+                  <th>Test</th>
+                  <th>Patient / Ref</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="adminAuditTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Console Footer -->
+        <div class="super-admin-footer">
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button type="button" class="btn primary" id="adminSaveConfigBtn">Save Security Policy</button>
+            <span id="adminSaveNotice" style="font-size:12px; color:#059669; font-weight:600; display:none;">✓ Security policy saved &amp; active!</span>
+          </div>
+          <button type="button" class="btn secondary" id="adminLogoutBtn">Log Out Admin</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js?v=20261112-v3"></script>
 </body>
 </html>
+
+

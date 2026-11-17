@@ -1,0 +1,2514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NeoSys Medical Laboratory - Super Admin Console</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/developer-logo-transparent.png">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="shortcut icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="assets/developer-logo-transparent.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ═══════════════════════════════════════════
+       RESET & BASE
+    ═══════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f1f5f9;
+      color: #1e293b;
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ═══════════════════════════════════════════
+       LOGIN SCREEN
+    ═══════════════════════════════════════════ */
+    #loginView {
+      position: fixed; inset: 0;
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999;
+    }
+    .login-bg-circles {
+      position: absolute; inset: 0; overflow: hidden; pointer-events: none;
+    }
+    .login-bg-circles span {
+      position: absolute; border-radius: 50%;
+      background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%);
+    }
+    .login-bg-circles span:nth-child(1) { width: 600px; height: 600px; top: -150px; left: -150px; }
+    .login-bg-circles span:nth-child(2) { width: 400px; height: 400px; bottom: -100px; right: -100px; }
+    .login-bg-circles span:nth-child(3) { width: 300px; height: 300px; top: 50%; left: 50%; transform: translate(-50%,-50%); }
+    .login-card {
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 24px;
+      padding: 48px 44px;
+      width: 100%;
+      max-width: 420px;
+      position: relative;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+    }
+    .login-logo {
+      display: flex; align-items: center; gap: 14px; margin-bottom: 32px;
+    }
+    .login-logo-icon {
+      width: 52px; height: 52px;
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 24px rgba(99,102,241,0.5);
+      flex-shrink: 0;
+    }
+    .login-logo-icon svg { width: 28px; height: 28px; fill: #fff; }
+    .login-logo-text h1 { font-size: 20px; font-weight: 800; color: #fff; }
+    .login-logo-text p { font-size: 12px; color: #94a3b8; font-weight: 500; }
+    .login-title { font-size: 15px; font-weight: 600; color: #e2e8f0; margin-bottom: 4px; }
+    .login-sub { font-size: 13px; color: #64748b; margin-bottom: 28px; }
+    .login-field { margin-bottom: 16px; }
+    .login-field label { display: block; font-size: 12px; font-weight: 600; color: #94a3b8; margin-bottom: 6px; letter-spacing: 0.5px; text-transform: uppercase; }
+    .login-field input {
+      width: 100%;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: #fff;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .login-field input:focus {
+      border-color: rgba(99,102,241,0.6);
+      background: rgba(255,255,255,0.1);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+    }
+    .login-field input::placeholder { color: #475569; }
+    #loginError {
+      display: none; background: rgba(239,68,68,0.15);
+      border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 10px; padding: 10px 14px;
+      color: #fca5a5; font-size: 13px; margin-bottom: 16px;
+    }
+    .login-btn {
+      width: 100%; padding: 13px;
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: #fff; border: none; border-radius: 12px;
+      font-size: 14px; font-weight: 700; font-family: inherit;
+      cursor: pointer; transition: all 0.2s;
+      box-shadow: 0 4px 16px rgba(99,102,241,0.4);
+      letter-spacing: 0.3px;
+      margin-top: 4px;
+    }
+    .login-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(99,102,241,0.5); }
+    .login-btn:active { transform: translateY(0); }
+
+    /* ═══════════════════════════════════════════
+       APP SHELL
+    ═══════════════════════════════════════════ */
+    #dashboardView {
+      display: flex; width: 100%; min-height: 100vh;
+    }
+
+    /* ═══════════════════════════════════════════
+       SIDEBAR
+    ═══════════════════════════════════════════ */
+    .sidebar {
+      width: 240px; min-width: 240px; height: 100vh;
+      position: fixed; top: 0; left: 0;
+      background: linear-gradient(180deg, #0f172a 0%, #1a1f3a 60%, #0f172a 100%);
+      display: flex; flex-direction: column;
+      z-index: 200; overflow: hidden;
+      border-right: 1px solid rgba(255,255,255,0.05);
+    }
+
+    /* Brand */
+    .sidebar-brand {
+      display: flex; align-items: center; gap: 12px;
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      flex-shrink: 0;
+    }
+    .sidebar-brand-icon {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 14px rgba(99,102,241,0.5);
+    }
+    .sidebar-brand-icon svg { width: 22px; height: 22px; fill: #fff; }
+    .sidebar-brand-text { overflow: hidden; }
+    .sidebar-brand-title {
+      font-size: 14px; font-weight: 800; color: #f1f5f9;
+      white-space: nowrap; letter-spacing: -0.2px;
+    }
+    .sidebar-brand-sub { font-size: 11px; color: #475569; font-weight: 500; }
+
+    /* Navigation */
+    .sidebar-nav {
+      flex: 1; padding: 20px 12px 0;
+      overflow-y: auto; scrollbar-width: none;
+    }
+    .sidebar-nav::-webkit-scrollbar { display: none; }
+
+    .nav-section-label {
+      font-size: 10px; font-weight: 700; color: #334155;
+      text-transform: uppercase; letter-spacing: 1px;
+      padding: 0 12px; margin-bottom: 6px; margin-top: 20px;
+    }
+    .nav-section-label:first-child { margin-top: 0; }
+
+    .tab-btn {
+      display: flex; align-items: center; gap: 12px;
+      width: 100%; padding: 11px 12px;
+      border-radius: 12px; border: none;
+      background: transparent;
+      color: #64748b;
+      font-family: inherit; font-size: 13.5px; font-weight: 500;
+      cursor: pointer; text-align: left;
+      transition: all 0.18s ease;
+      margin-bottom: 2px;
+      position: relative;
+    }
+    .tab-btn .nav-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.04);
+      flex-shrink: 0; transition: all 0.18s;
+    }
+    .tab-btn .nav-icon svg { width: 18px; height: 18px; opacity: 0.6; }
+    .tab-btn .nav-label-text { flex: 1; }
+    .tab-btn:hover {
+      background: rgba(255,255,255,0.05);
+      color: #e2e8f0;
+    }
+    .tab-btn:hover .nav-icon { background: rgba(255,255,255,0.08); }
+    .tab-btn:hover .nav-icon svg { opacity: 0.9; }
+    .tab-btn.active {
+      background: linear-gradient(90deg, rgba(99,102,241,0.2), rgba(99,102,241,0.08));
+      color: #818cf8;
+      border: 1px solid rgba(99,102,241,0.2);
+    }
+    .tab-btn.active .nav-icon {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      box-shadow: 0 4px 12px rgba(99,102,241,0.4);
+    }
+    .tab-btn.active .nav-icon svg { opacity: 1; fill: #fff; color: #fff; }
+
+    .tab-badge {
+      margin-left: auto;
+      background: rgba(99,102,241,0.2);
+      color: #818cf8;
+      font-size: 11px; font-weight: 700;
+      padding: 2px 8px; border-radius: 20px;
+      flex-shrink: 0;
+    }
+    .tab-btn:not(.active) .tab-badge {
+      background: rgba(255,255,255,0.06);
+      color: #475569;
+    }
+
+    /* Sidebar bottom artwork */
+    .sidebar-artwork {
+      flex-shrink: 0; height: 140px; overflow: hidden;
+      position: relative; margin-top: auto;
+    }
+    .sidebar-artwork svg { width: 100%; height: 140px; }
+
+    /* Profile bar */
+    .sidebar-profile {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 16px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+      cursor: pointer; transition: background 0.15s;
+      flex-shrink: 0;
+    }
+    .sidebar-profile:hover { background: rgba(255,255,255,0.03); }
+    .sidebar-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #7c3aed);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 14px; color: #fff;
+      flex-shrink: 0;
+    }
+    .sidebar-profile-info { flex: 1; overflow: hidden; }
+    .sidebar-profile-name { font-size: 13px; font-weight: 600; color: #e2e8f0; }
+    .sidebar-profile-role { font-size: 11px; color: #475569; }
+    .sidebar-logout-btn {
+      background: none; border: none; color: #475569;
+      cursor: pointer; padding: 4px; border-radius: 6px;
+      transition: color 0.15s; flex-shrink: 0;
+    }
+    .sidebar-logout-btn:hover { color: #ef4444; }
+    .sidebar-logout-btn svg { width: 16px; height: 16px; }
+
+    /* ═══════════════════════════════════════════
+       TOPBAR
+    ═══════════════════════════════════════════ */
+    .topbar {
+      position: fixed; top: 0; left: 240px; right: 0;
+      height: 64px; background: #fff;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex; align-items: center;
+      padding: 0 28px; gap: 16px;
+      z-index: 100;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .topbar-title { font-size: 18px; font-weight: 700; color: #0f172a; flex: 1; }
+    .topbar-title span { color: #6366f1; }
+    .topbar-actions { display: flex; align-items: center; gap: 10px; }
+    .topbar-pill {
+      display: flex; align-items: center; gap: 7px;
+      padding: 7px 14px; border-radius: 50px;
+      background: #f8fafc; border: 1px solid #e2e8f0;
+      font-size: 13px; font-weight: 600; color: #475569;
+      cursor: pointer; transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .topbar-pill:hover { background: #f1f5f9; border-color: #cbd5e1; }
+    .topbar-pill svg { width: 16px; height: 16px; }
+    .topbar-pill.pill-indigo { background: #eef2ff; border-color: #c7d2fe; color: #4f46e5; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.6); flex-shrink: 0; }
+    #systemStatusPill { cursor: default; }
+    #systemStatusText { font-size: 12.5px; }
+
+    /* ═══════════════════════════════════════════
+       MAIN CONTENT
+    ═══════════════════════════════════════════ */
+    .main-wrapper {
+      margin-left: 240px; margin-top: 64px;
+      flex: 1; min-height: calc(100vh - 64px);
+      padding: 28px 32px;
+      background: #f1f5f9;
+    }
+
+    /* Page heading */
+    .page-heading {
+      margin-bottom: 24px;
+    }
+    .page-heading-row {
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    }
+    .page-heading h2 { font-size: 22px; font-weight: 800; color: #0f172a; }
+    .page-heading p { font-size: 13.5px; color: #64748b; margin-top: 2px; }
+
+    /* Tabs pane */
+    .tab-pane { display: none; }
+    .tab-pane.active-pane { display: block; }
+
+    /* ═══════════════════════════════════════════
+       STAT CARDS (Dashboard overview)
+    ═══════════════════════════════════════════ */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      background: #fff; border-radius: 16px;
+      padding: 22px 24px;
+      border: 1px solid #e2e8f0;
+      display: flex; align-items: flex-start; gap: 16px;
+      transition: box-shadow 0.2s, transform 0.2s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .stat-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.08); transform: translateY(-2px); }
+    .stat-icon {
+      width: 48px; height: 48px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .stat-icon svg { width: 24px; height: 24px; }
+    .stat-icon.indigo { background: #eef2ff; color: #6366f1; }
+    .stat-icon.indigo svg { stroke: #6366f1; }
+    .stat-icon.green { background: #dcfce7; color: #16a34a; }
+    .stat-icon.green svg { stroke: #16a34a; }
+    .stat-icon.amber { background: #fef9c3; color: #ca8a04; }
+    .stat-icon.amber svg { stroke: #ca8a04; }
+    .stat-icon.rose { background: #ffe4e6; color: #e11d48; }
+    .stat-icon.rose svg { stroke: #e11d48; }
+    .stat-info { flex: 1; min-width: 0; }
+    .stat-label { font-size: 12px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .stat-value { font-size: 28px; font-weight: 800; color: #0f172a; line-height: 1; }
+    .stat-sub { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+
+    /* ═══════════════════════════════════════════
+       ADMIN CARD
+    ═══════════════════════════════════════════ */
+    .admin-card {
+      background: #fff; border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      overflow: hidden; margin-bottom: 20px;
+    }
+    .card-head {
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+      padding: 20px 24px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .card-title-group h2 { font-size: 15px; font-weight: 700; color: #0f172a; }
+    .card-title-group p { font-size: 13px; color: #64748b; margin-top: 2px; }
+    .card-body { padding: 24px; }
+
+    /* ═══════════════════════════════════════════
+       BUTTONS
+    ═══════════════════════════════════════════ */
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 9px 18px; border-radius: 10px;
+      font-size: 13.5px; font-weight: 600; font-family: inherit;
+      border: none; cursor: pointer; transition: all 0.18s;
+      white-space: nowrap; text-decoration: none;
+    }
+    .btn svg { width: 16px; height: 16px; }
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: #fff; box-shadow: 0 4px 14px rgba(99,102,241,0.35);
+    }
+    .btn-primary:hover { box-shadow: 0 6px 20px rgba(99,102,241,0.5); transform: translateY(-1px); }
+    .btn-secondary {
+      background: #f8fafc; color: #334155;
+      border: 1px solid #e2e8f0;
+    }
+    .btn-secondary:hover { background: #f1f5f9; border-color: #cbd5e1; }
+    .btn-success { background: linear-gradient(135deg, #22c55e, #16a34a); color: #fff; box-shadow: 0 4px 14px rgba(34,197,94,0.3); }
+    .btn-success:hover { box-shadow: 0 6px 20px rgba(34,197,94,0.4); transform: translateY(-1px); }
+    .btn-danger { background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff; }
+    .btn-danger:hover { opacity: 0.9; }
+    .btn-xs { padding: 6px 12px; font-size: 12px; border-radius: 8px; }
+    .btn-sm { padding: 7px 14px; font-size: 12.5px; border-radius: 9px; }
+
+    /* ═══════════════════════════════════════════
+       FORM ELEMENTS
+    ═══════════════════════════════════════════ */
+    .form-group { margin-bottom: 16px; }
+    .form-label { display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .req { color: #ef4444; }
+    .form-input {
+      width: 100%; padding: 10px 14px;
+      border: 1.5px solid #e2e8f0; border-radius: 10px;
+      font-size: 14px; font-family: inherit; color: #0f172a;
+      background: #fff; outline: none;
+      transition: all 0.2s;
+    }
+    .form-input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+    .form-input::placeholder { color: #94a3b8; }
+    .form-select {
+      width: 100%; padding: 10px 14px;
+      border: 1.5px solid #e2e8f0; border-radius: 10px;
+      font-size: 14px; font-family: inherit; color: #0f172a;
+      background: #fff; outline: none; cursor: pointer;
+      transition: all 0.2s; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center;
+      padding-right: 36px;
+    }
+    .form-select:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+    textarea.form-input { resize: vertical; min-height: 80px; }
+
+    /* ═══════════════════════════════════════════
+       SEARCH INPUT
+    ═══════════════════════════════════════════ */
+    .search-wrap {
+      position: relative; display: flex; align-items: center;
+    }
+    .search-wrap svg {
+      position: absolute; left: 12px; width: 16px; height: 16px;
+      stroke: #94a3b8; pointer-events: none;
+    }
+    .search-wrap input {
+      padding-left: 38px; height: 40px;
+      border-radius: 10px;
+    }
+
+    /* ═══════════════════════════════════════════
+       TABLES
+    ═══════════════════════════════════════════ */
+    .table-responsive { overflow-x: auto; }
+    .modern-table {
+      width: 100%; border-collapse: collapse;
+      font-size: 13.5px;
+    }
+    .modern-table thead th {
+      background: #f8fafc;
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 11.5px; font-weight: 700; color: #64748b;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      border-bottom: 2px solid #e2e8f0;
+      white-space: nowrap;
+    }
+    .modern-table tbody tr {
+      border-bottom: 1px solid #f1f5f9;
+      transition: background 0.12s;
+    }
+    .modern-table tbody tr:hover { background: #f8fafc; }
+    .modern-table tbody tr:last-child { border-bottom: none; }
+    .modern-table td {
+      padding: 13px 16px; color: #334155; vertical-align: middle;
+    }
+    .modern-table td:first-child { font-weight: 600; color: #0f172a; }
+
+    /* ═══════════════════════════════════════════
+       BADGES
+    ═══════════════════════════════════════════ */
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: 50px;
+      font-size: 11.5px; font-weight: 700; letter-spacing: 0.3px;
+    }
+    .badge-green { background: #dcfce7; color: #15803d; }
+    .badge-red { background: #fee2e2; color: #dc2626; }
+    .badge-amber { background: #fef9c3; color: #a16207; }
+    .badge-blue { background: #dbeafe; color: #1d4ed8; }
+    .badge-indigo { background: #e0e7ff; color: #4338ca; }
+    .badge-gray { background: #f1f5f9; color: #64748b; }
+
+    /* ═══════════════════════════════════════════
+       TOGGLE SWITCHES
+    ═══════════════════════════════════════════ */
+    .switch-toggle { position: relative; display: inline-block; width: 44px; height: 24px; flex-shrink: 0; }
+    .switch-toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-track {
+      position: absolute; inset: 0;
+      background: #e2e8f0; border-radius: 50px;
+      cursor: pointer; transition: background 0.25s;
+    }
+    .toggle-track::before {
+      content: ''; position: absolute;
+      height: 18px; width: 18px; left: 3px; bottom: 3px;
+      background: white; border-radius: 50%;
+      transition: transform 0.25s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+    .switch-toggle input:checked + .toggle-track { background: #6366f1; }
+    .switch-toggle input:checked + .toggle-track::before { transform: translateX(20px); }
+
+    /* ═══════════════════════════════════════════
+       POLICY ROW
+    ═══════════════════════════════════════════ */
+    .policy-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      padding: 18px 0; border-bottom: 1px solid #f1f5f9;
+    }
+    .policy-row:last-child { border-bottom: none; }
+    .policy-info { flex: 1; min-width: 0; }
+    .policy-info strong { display: block; font-size: 14px; font-weight: 600; color: #0f172a; }
+    .policy-info p { font-size: 13px; color: #64748b; margin-top: 2px; }
+
+    /* ═══════════════════════════════════════════
+       LOCKDOWN BANNER
+    ═══════════════════════════════════════════ */
+    .lockdown-banner {
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 20px;
+      flex-wrap: wrap;
+      background: #fff; border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      padding: 24px; margin-bottom: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    .lockdown-banner.active-lockdown {
+      background: #fff5f5;
+      border-color: #fca5a5;
+    }
+    .lockdown-left h3 { font-size: 16px; font-weight: 700; color: #0f172a; }
+    .lockdown-left p { font-size: 13px; color: #64748b; margin-top: 4px; max-width: 500px; }
+
+    /* ═══════════════════════════════════════════
+       NOTICE / ALERTS
+    ═══════════════════════════════════════════ */
+    .notice-alert {
+      display: none; padding: 12px 16px; border-radius: 10px;
+      font-size: 13px; font-weight: 500; margin-top: 12px;
+    }
+    .notice-alert.success { display: block; background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    .notice-alert.error { display: block; background: #fee2e2; color: #dc2626; border: 1px solid #fca5a5; }
+    .notice-alert.info { display: block; background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
+
+    /* ═══════════════════════════════════════════
+       TESTS GRID (Categorized)
+    ═══════════════════════════════════════════ */
+    #categorizedTestsGrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .category-card {
+      background: #fff; border-radius: 14px;
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .category-info {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid #f1f5f9;
+      font-weight: 700; font-size: 13px; color: #0f172a;
+      background: #f8fafc;
+    }
+    .category-tests { padding: 8px 0; }
+    .test-row-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 16px;
+      border-bottom: 1px solid #f8fafc;
+      transition: background 0.1s;
+    }
+    .test-row-item:last-child { border-bottom: none; }
+    .test-row-item:hover { background: #f8fafc; }
+    .test-row-item input[type="checkbox"] {
+      width: 16px; height: 16px; accent-color: #6366f1;
+      cursor: pointer; flex-shrink: 0;
+    }
+    .test-row-label { font-size: 13px; color: #334155; cursor: pointer; flex: 1; }
+
+    /* ═══════════════════════════════════════════
+       PACKAGES CHECKLIST
+    ═══════════════════════════════════════════ */
+    #packageTestsChecklist {
+      max-height: 320px; overflow-y: auto;
+      border: 1.5px solid #e2e8f0; border-radius: 12px;
+      padding: 8px;
+    }
+    .pkg-test-check {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 10px; border-radius: 8px;
+      transition: background 0.1s;
+    }
+    .pkg-test-check:hover { background: #f8fafc; }
+    .pkg-test-check input[type="checkbox"] { width: 15px; height: 15px; accent-color: #6366f1; cursor: pointer; }
+    .pkg-test-check label { font-size: 13px; color: #334155; cursor: pointer; }
+
+    /* ═══════════════════════════════════════════
+       TOAST
+    ═══════════════════════════════════════════ */
+    .admin-toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: #0f172a; color: #f1f5f9;
+      padding: 12px 20px; border-radius: 12px;
+      font-size: 13.5px; font-weight: 500;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      transform: translateY(80px); opacity: 0;
+      transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1);
+      z-index: 9999; pointer-events: none;
+      display: flex; align-items: center; gap: 10px;
+      max-width: 360px;
+    }
+    .admin-toast.show { transform: translateY(0); opacity: 1; }
+    .admin-toast.toast-success { background: #15803d; }
+    .admin-toast.toast-error { background: #dc2626; }
+
+    /* ═══════════════════════════════════════════
+       CUSTOM TEST FORM TWO-COLUMN
+    ═══════════════════════════════════════════ */
+    .form-grid-2 {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    }
+    @media (max-width: 640px) { .form-grid-2 { grid-template-columns: 1fr; } }
+
+    /* ═══════════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════════ */
+    @media (max-width: 900px) {
+      .sidebar { width: 68px; }
+      .sidebar-brand-text,
+      .nav-label-text,
+      .tab-badge,
+      .nav-section-label,
+      .sidebar-profile-info,
+      .sidebar-brand-sub { display: none; }
+      .sidebar-brand { justify-content: center; padding: 20px 0; }
+      .tab-btn { padding: 10px; justify-content: center; }
+      .tab-btn .nav-icon { margin: 0; }
+      .topbar, .main-wrapper { left: 68px; margin-left: 68px; }
+    }
+
+    /* ═══════════════════════════════════════════
+       TOOLBAR BUTTONS ROW
+    ═══════════════════════════════════════════ */
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+    /* scrollbar custom */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  
+    /* ═══════════════════════════════════════════
+       IRCTC / MODERN DASHBOARD THEME REFINEMENTS
+    ═══════════════════════════════════════════ */
+    :root {
+      --primary-blue: #2563eb;
+      --primary-blue-hover: #1d4ed8;
+      --sidebar-bg: #0b111e;
+      --sidebar-card: rgba(255, 255, 255, 0.05);
+      --bg-page: #f4f6fa;
+      --card-bg: #ffffff;
+      --border-color: #e5e9f2;
+      --text-dark: #0f172a;
+      --text-muted: #64748b;
+      --success-green: #10b981;
+      --success-green-bg: #ecfdf5;
+    }
+
+    body {
+      background: var(--bg-page);
+      color: var(--text-dark);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    /* Sidebar Exact Match */
+    .sidebar {
+      width: 250px !important;
+      min-width: 250px !important;
+      background: #0b111e !important;
+      border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 200;
+    }
+
+    .sidebar-brand {
+      padding: 24px 22px 20px !important;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: none !important;
+    }
+
+    .sidebar-brand-icon {
+      width: 42px !important;
+      height: 42px !important;
+      background: #2563eb !important;
+      border-radius: 12px !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4) !important;
+    }
+
+    .sidebar-brand-icon svg {
+      width: 24px !important;
+      height: 24px !important;
+      fill: #ffffff !important;
+    }
+
+    .sidebar-brand-title {
+      font-size: 17px !important;
+      font-weight: 800 !important;
+      color: #ffffff !important;
+      letter-spacing: 0.5px;
+    }
+
+    .sidebar-brand-sub {
+      font-size: 11.5px !important;
+      color: #94a3b8 !important;
+      font-weight: 500;
+    }
+
+    .sidebar-nav {
+      flex: 1;
+      padding: 16px 14px !important;
+      overflow-y: auto;
+    }
+
+    .nav-section-label {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #475569;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 10px 14px 6px;
+    }
+
+    .tab-btn {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 11px 16px !important;
+      border-radius: 12px !important;
+      border: none !important;
+      background: transparent !important;
+      color: #94a3b8 !important;
+      font-size: 13.5px !important;
+      font-weight: 500 !important;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s ease;
+      margin-bottom: 4px;
+      position: relative;
+    }
+
+    .tab-btn:hover {
+      background: rgba(255, 255, 255, 0.05) !important;
+      color: #f1f5f9 !important;
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+      color: #ffffff !important;
+      font-weight: 600 !important;
+      box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35) !important;
+      border: none !important;
+    }
+
+    .tab-btn .nav-icon {
+      width: 22px !important;
+      height: 22px !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent !important;
+      box-shadow: none !important;
+      opacity: 0.8;
+    }
+
+    .tab-btn.active .nav-icon {
+      opacity: 1 !important;
+      fill: #ffffff !important;
+      color: #ffffff !important;
+    }
+
+    .tab-btn .nav-icon svg {
+      width: 18px !important;
+      height: 18px !important;
+    }
+
+    /* Artwork at bottom of sidebar */
+    .sidebar-artwork-wrap {
+      padding: 0 14px;
+      margin-top: auto;
+      margin-bottom: 8px;
+    }
+
+    .sidebar-train-art {
+      width: 100%;
+      height: 140px;
+      border-radius: 14px;
+      overflow: hidden;
+      display: block;
+      background: #0d1527;
+      box-shadow: inset 0 0 20px rgba(0,0,0,0.4);
+    }
+
+    /* Bottom User Profile */
+    .sidebar-profile-card {
+      margin: 10px 14px 16px;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .sidebar-profile-card:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .profile-avatar-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #0b111e;
+      font-weight: 700;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    .profile-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .profile-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .profile-email {
+      font-size: 11px;
+      color: #64748b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .profile-arrow {
+      color: #64748b;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Topbar Exact Match */
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 250px !important;
+      right: 0;
+      height: 70px !important;
+      background: #ffffff;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      z-index: 100;
+    }
+
+    .topbar-welcome {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar-welcome-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .topbar-welcome-name {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--text-dark);
+      letter-spacing: -0.2px;
+    }
+
+    .topbar-right-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .topbar-round-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #64748b;
+      position: relative;
+      transition: all 0.15s;
+    }
+
+    .topbar-round-btn:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      color: #0f172a;
+    }
+
+    .topbar-round-btn svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .topbar-badge-count {
+      position: absolute;
+      top: -3px;
+      right: -3px;
+      background: #2563eb;
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 700;
+      height: 18px;
+      min-width: 18px;
+      padding: 0 4px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #ffffff;
+    }
+
+    /* Main Content */
+    .main-wrapper {
+      margin-left: 250px !important;
+      margin-top: 70px !important;
+      padding: 32px;
+      background: var(--bg-page);
+      min-height: calc(100vh - 70px);
+    }
+
+    .report-page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .report-page-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text-dark);
+      letter-spacing: -0.4px;
+    }
+
+    .date-filter-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    .date-filter-pill:hover {
+      background: #f8fafc;
+    }
+
+    /* Top Grid: Left 2 KPI Cards, Right Large Chart */
+    .top-analytics-grid {
+      display: grid;
+      grid-template-columns: 290px 1fr;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 1024px) {
+      .top-analytics-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .kpi-cards-col {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .kpi-card {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 22px 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 145px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+
+    .kpi-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .kpi-icon-box {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .kpi-icon-purple {
+      background: #eef2ff;
+      color: #6366f1;
+    }
+
+    .kpi-icon-cyan {
+      background: #e0f2fe;
+      color: #0284c7;
+    }
+
+    .kpi-icon-box svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .kpi-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 4px;
+    }
+
+    .kpi-value {
+      font-size: 30px;
+      font-weight: 800;
+      color: var(--text-dark);
+      line-height: 1;
+    }
+
+    .kpi-footer {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .kpi-growth {
+      color: var(--success-green);
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    /* Chart Card */
+    .chart-card {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 22px 24px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+
+    .chart-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .chart-title-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .chart-title-left svg {
+      width: 18px;
+      height: 18px;
+      color: #2563eb;
+    }
+
+    .chart-title-left h3 {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--text-dark);
+    }
+
+    .chart-legend-row {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-left: 28px;
+    }
+
+    .chart-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chart-legend-line-blue {
+      width: 14px;
+      height: 2px;
+      background: #1e3a8a;
+      border-radius: 1px;
+    }
+
+    .chart-legend-dot-cyan {
+      width: 7px;
+      height: 7px;
+      background: #38bdf8;
+      border-radius: 50%;
+    }
+
+    .chart-period-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+    }
+
+    .chart-canvas-wrap {
+      flex: 1;
+      width: 100%;
+      height: 220px;
+      position: relative;
+    }
+
+    /* All NFT Tickets Table Card */
+    .tickets-table-card {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+
+    .table-top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px 16px;
+    }
+
+    .table-top-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-dark);
+    }
+
+    .btn-export-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 16px;
+      border-radius: 8px;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      font-size: 13px;
+      font-weight: 600;
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .btn-export-pill:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+
+    /* Table Filters Row */
+    .table-filters-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 24px 18px;
+      flex-wrap: wrap;
+    }
+
+    .table-search-box {
+      flex: 1;
+      min-width: 240px;
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .table-search-box input {
+      width: 100%;
+      padding: 9px 36px 9px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      font-size: 13px;
+      color: #0f172a;
+      outline: none;
+      background: #ffffff;
+      transition: border-color 0.15s;
+    }
+
+    .table-search-box input:focus {
+      border-color: #2563eb;
+    }
+
+    .table-search-box svg {
+      position: absolute;
+      right: 12px;
+      width: 16px;
+      height: 16px;
+      color: #94a3b8;
+      pointer-events: none;
+    }
+
+    .filter-tag-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #1d4ed8;
+      cursor: pointer;
+    }
+
+    .filter-tag-close {
+      color: #1d4ed8;
+      font-size: 13px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .filter-dropdown-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: #475569;
+      cursor: pointer;
+    }
+
+    .filter-dropdown-pill:hover {
+      background: #f8fafc;
+    }
+
+    /* Modern Table */
+    .tickets-table-wrap {
+      overflow-x: auto;
+    }
+
+    .irctc-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .irctc-table th {
+      background: #f8fafc;
+      padding: 12px 24px;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 12px;
+      border-top: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+      white-space: nowrap;
+    }
+
+    .irctc-table td {
+      padding: 14px 24px;
+      border-bottom: 1px solid #f1f5f9;
+      color: var(--text-dark);
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    .irctc-table tr:hover {
+      background: #f8fafc;
+    }
+
+    .td-booking-id {
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .td-name {
+      font-weight: 500;
+      color: #334155;
+    }
+
+    .td-public-url {
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .td-public-url:hover {
+      text-decoration: underline;
+    }
+
+    .td-proof {
+      color: #475569;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .copy-btn-icon {
+      cursor: pointer;
+      color: #94a3b8;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .copy-btn-icon:hover {
+      color: #2563eb;
+    }
+
+    .status-pill-minted {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--success-green-bg);
+      color: #059669;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status-dot-green {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10b981;
+    }
+
+    .status-pill-positive {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #fee2e2;
+      color: #dc2626;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status-dot-red {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #ef4444;
+    }
+
+    /* Table Pagination */
+    .table-pagination-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      border-top: 1px solid #f1f5f9;
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    .pagination-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .page-btn {
+      min-width: 32px;
+      height: 32px;
+      padding: 0 8px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: #ffffff;
+      color: #475569;
+      font-size: 12.5px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .page-btn:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+
+    .page-btn.active {
+      background: #2563eb !important;
+      color: #ffffff !important;
+      border-color: #2563eb !important;
+    }
+
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════
+     LOGIN SCREEN
+══════════════════════════════════════════════════════ -->
+<div id="loginView">
+  <div class="login-bg-circles">
+    <span></span><span></span><span></span>
+  </div>
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" opacity="0" />
+          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/>
+        </svg>
+      </div>
+      <div class="login-logo-text">
+        <h1>NeoSys Lab</h1>
+        <p>Super Admin Console</p>
+      </div>
+    </div>
+    <p class="login-title">Welcome back, Admin</p>
+    <p class="login-sub">Sign in to access the administration panel</p>
+    <div id="loginError">Invalid credentials. Please try again.</div>
+    <form id="adminLoginForm" autocomplete="off">
+      <div class="login-field">
+        <label for="loginUsername">Username</label>
+        <input type="text" id="loginUsername" placeholder="Enter admin username" autocomplete="username">
+      </div>
+      <div class="login-field">
+        <label for="loginPassword">Password</label>
+        <input type="password" id="loginPassword" placeholder="Enter admin password" autocomplete="current-password">
+      </div>
+      <button type="submit" class="login-btn">Sign In to Console</button>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     DASHBOARD SHELL
+══════════════════════════════════════════════════════ -->
+<div id="dashboardView" style="display:none;">
+
+      <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <!-- Brand -->
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-icon" style="background: linear-gradient(135deg, #0284c7, #2563eb);">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#ffffff" stroke-width="2">
+          <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+        </svg>
+      </div>
+      <div class="sidebar-brand-text">
+        <div class="sidebar-brand-title" style="font-size:16px; font-weight:800; color:#fff;">NeoSys Lab</div>
+        <div class="sidebar-brand-sub" style="font-size:11px; color:#94a3b8;">Medical Admin Console</div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Overview</div>
+
+      <button class="tab-btn active" data-pane="paneDashboard">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+        </span>
+        <span class="nav-label-text">Dashboard</span>
+      </button>
+
+      <div class="nav-section-label">Laboratory Management</div>
+
+      <button class="tab-btn" data-pane="paneTests">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+            <rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/>
+          </svg>
+        </span>
+        <span class="nav-label-text">Tests &amp; Permissions</span>
+        <span class="tab-badge" id="testsActiveCount" style="margin-left:auto; font-size:10.5px; background:rgba(255,255,255,0.08); padding:2px 8px; border-radius:10px;">Active</span>
+      </button>
+
+      <button class="tab-btn" data-pane="panePackages">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+          </svg>
+        </span>
+        <span class="nav-label-text">Medical Packages</span>
+        <span class="tab-badge" id="pkgCountBadge" style="margin-left:auto; font-size:10.5px; background:rgba(255,255,255,0.08); padding:2px 8px; border-radius:10px;">Bundles</span>
+      </button>
+
+      <button class="tab-btn" data-pane="paneCustom">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M2 12h2M20 12h2M17.66 17.66l-1.41-1.41M6.34 17.66l1.41-1.41"/>
+          </svg>
+        </span>
+        <span class="nav-label-text">Custom Tests</span>
+        <span class="tab-badge" id="customCountBadge" style="margin-left:auto; font-size:10.5px; background:rgba(255,255,255,0.08); padding:2px 8px; border-radius:10px;">Config</span>
+      </button>
+
+      <div class="nav-section-label">Administration &amp; Access</div>
+
+      <button class="tab-btn" data-pane="paneUsers">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </span>
+        <span class="nav-label-text">User Accounts</span>
+        <span class="tab-badge" id="usersCountBadge" style="margin-left:auto; font-size:10.5px; background:rgba(255,255,255,0.08); padding:2px 8px; border-radius:10px;">Staff</span>
+      </button>
+
+      <button class="tab-btn" data-pane="paneExports">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 10v6m0 0l-3-3m3 3l3-3M3 17v3a2 2 0 002 2h14a2 2 0 002-2v-3"/>
+            <path d="M17 10H7a4 4 0 010-8h3M17 2a4 4 0 010 8h-3"/>
+          </svg>
+        </span>
+        <span class="nav-label-text">Export Policies</span>
+      </button>
+
+      <button class="tab-btn" data-pane="paneCredentials">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0110 0v4"/>
+          </svg>
+        </span>
+        <span class="nav-label-text">Security &amp; Lockdown</span>
+      </button>
+
+      <button class="tab-btn" data-pane="paneAudit">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </span>
+        <span class="nav-label-text">Audit Trail</span>
+        <span class="tab-badge" id="auditBadge" style="margin-left:auto; font-size:10.5px; background:rgba(255,255,255,0.08); padding:2px 8px; border-radius:10px;">Logs</span>
+      </button>
+    </nav>
+
+    <!-- Clean Lab Stats Widget in Sidebar -->
+    <div style="padding: 12px 14px; margin-top: auto;">
+      <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 12px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+          <span style="font-size:11px; font-weight:600; color:#94a3b8; text-transform:uppercase;">System Engine</span>
+          <span style="font-size:10px; font-weight:700; color:#10b981; background:rgba(16,185,129,0.15); padding:2px 6px; border-radius:8px;">ONLINE</span>
+        </div>
+        <div style="font-size:12px; color:#e2e8f0; font-weight:500;">HL7 MLLP: Active (5600)</div>
+        <div style="font-size:11px; color:#64748b; margin-top:2px;">NeoSys Engine v3.2</div>
+      </div>
+    </div>
+
+    <!-- User Profile Card -->
+    <div class="sidebar-profile-card" id="sidebarProfileCard" title="Super Admin Account" style="margin: 8px 14px 16px;">
+      <div class="profile-avatar-circle" id="sidebarAvatarCircle" style="background:#2563eb; color:#fff; font-weight:700;">
+        C
+      </div>
+      <div class="profile-info">
+        <div class="profile-name" id="sidebarProfileName">Chathura</div>
+        <div class="profile-email" id="sidebarProfileEmail">Super Administrator</div>
+      </div>
+      <button class="sidebar-logout-btn" id="logoutBtn" title="Logout" style="background:none; border:none; color:#94a3b8; cursor:pointer; padding:6px; display:flex;">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+      </button>
+    </div>
+  </aside>
+
+      <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-welcome">
+      <span class="topbar-welcome-sub">Welcome back,</span>
+      <span class="topbar-welcome-name" id="topbarAdminName">Chathura (Super Admin)</span>
+    </div>
+
+    <div class="topbar-right-actions">
+      <!-- System status pill -->
+      <div class="topbar-pill" id="systemStatusPill" style="display:flex; align-items:center; gap:6px; padding:6px 14px; border-radius:50px; background:#f0fdf4; border:1px solid #bbf7d0; font-size:12px; font-weight:600; color:#166534;">
+        <span style="width:8px; height:8px; border-radius:50%; background:#22c55e;"></span>
+        <span id="systemStatusText">System Operational</span>
+      </div>
+
+      <!-- Tests pill -->
+      <div class="topbar-pill" style="display:flex; align-items:center; gap:6px; padding:6px 14px; border-radius:50px; background:#eff6ff; border:1px solid #bfdbfe; font-size:12px; font-weight:600; color:#1e40af;">
+        <span id="statTotalTests">—</span> Active Tests
+      </div>
+
+      <!-- Packages pill -->
+      <div class="topbar-pill" style="display:flex; align-items:center; gap:6px; padding:6px 14px; border-radius:50px; background:#f8fafc; border:1px solid #e2e8f0; font-size:12px; font-weight:600; color:#475569;">
+        <span id="statPackages">—</span> Packages
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-wrapper">
+
+    <!-- ══════════════════════════════════
+         PANE: DASHBOARD
+    ══════════════════════════════════ -->
+        <!-- ══════════════════════════════════
+         PANE: DASHBOARD (IRCTC / MODERN ANALYTICS)
+    ══════════════════════════════════ -->
+        <!-- ══════════════════════════════════
+         PANE: DASHBOARD (NEOSYS LABORATORY OVERVIEW)
+    ══════════════════════════════════ -->
+    <section id="paneDashboard" class="tab-pane active-pane">
+      
+      <!-- Top Title and Date Filter -->
+      <div class="report-page-header">
+        <div>
+          <h1 class="report-page-title">Medical Laboratory Overview</h1>
+          <p style="font-size:13px; color:#64748b; margin-top:2px;">NeoSys Laboratory System Statistics, Activity &amp; Records Management</p>
+        </div>
+        <div class="date-filter-pill" id="dateFilterBtn" title="Current session date">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+            <line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/>
+            <line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <span id="dateRangeText">November 2026</span>
+        </div>
+      </div>
+
+      <!-- KPI Stat Cards Grid -->
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap:18px; margin-bottom:24px;">
+        
+        <div class="kpi-card" style="padding:20px 22px;">
+          <div class="kpi-header">
+            <div class="kpi-icon-box" style="background:#eff6ff; color:#2563eb;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+              </svg>
+            </div>
+            <div>
+              <div class="kpi-label">Total Reports</div>
+              <div class="kpi-value" id="kpiTotalReports">1,200+</div>
+            </div>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-growth">✓ Live</span>
+            <span>Generated across all branches</span>
+          </div>
+        </div>
+
+        <div class="kpi-card" style="padding:20px 22px;">
+          <div class="kpi-header">
+            <div class="kpi-icon-box" style="background:#f0fdf4; color:#16a34a;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
+            <div>
+              <div class="kpi-label">Patient Records</div>
+              <div class="kpi-value" id="kpiTotalPatients">960+</div>
+            </div>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-growth" style="color:#16a34a;">✓ Indexed</span>
+            <span>Urine Drug &amp; Routine Tests</span>
+          </div>
+        </div>
+
+        <div class="kpi-card" style="padding:20px 22px;">
+          <div class="kpi-header">
+            <div class="kpi-icon-box" style="background:#fef3c7; color:#d97706;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/>
+              </svg>
+            </div>
+            <div>
+              <div class="kpi-label">Active Tests</div>
+              <div class="kpi-value" id="statActiveTestsCard">20</div>
+            </div>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-growth" style="color:#d97706;">✓ Ready</span>
+            <span>Available in generator</span>
+          </div>
+        </div>
+
+        <div class="kpi-card" style="padding:20px 22px;">
+          <div class="kpi-header">
+            <div class="kpi-icon-box" style="background:#f3e8ff; color:#9333ea;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </div>
+            <div>
+              <div class="kpi-label">Security &amp; Auth</div>
+              <div class="kpi-value" id="statTotalUsersCard">1</div>
+            </div>
+          </div>
+          <div class="kpi-footer">
+            <span class="kpi-growth" style="color:#9333ea;">✓ Scrypt 32MB</span>
+            <span>Super Admin &amp; Staff Locked</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div style="background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:18px 24px; margin-bottom:24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+        <div>
+          <h3 style="font-size:15px; font-weight:700; color:#0f172a;">Quick Laboratory Controls</h3>
+          <p style="font-size:12.5px; color:#64748b;">Direct navigation to system modules</p>
+        </div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" onclick="document.querySelector('[data-pane=paneTests]').click()">
+            Manage Tests
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="document.querySelector('[data-pane=panePackages]').click()">
+            Manage Packages
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="document.querySelector('[data-pane=paneUsers]').click()">
+            Manage Users
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="document.querySelector('[data-pane=paneCredentials]').click()">
+            Change Password
+          </button>
+        </div>
+      </div>
+
+      <!-- Laboratory Patient Records Table -->
+      <div class="tickets-table-card">
+        <div class="table-top-bar">
+          <div class="table-top-title">Laboratory Patient Records &amp; Lookups</div>
+          <button class="btn-export-pill" id="btnExportTickets" title="Export records">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span>Export CSV</span>
+          </button>
+        </div>
+
+        <div class="table-filters-row">
+          <div class="table-search-box">
+            <input type="text" id="ticketsSearchInput" placeholder="Search by Ref. No, Patient Name, Passport, NIC...">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </div>
+          <div class="filter-dropdown-pill" id="filterTestTypePill">
+            <span>Filter: All Tests</span>
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="tickets-table-wrap">
+          <table class="irctc-table" id="ticketsMainTable">
+            <thead>
+              <tr>
+                <th>Ref. No</th>
+                <th>Patient Name</th>
+                <th>Passport / NIC</th>
+                <th>Agency</th>
+                <th>Date</th>
+                <th>Specimen</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="ticketsTableBody">
+              <tr>
+                <td class="td-booking-id">5137</td>
+                <td class="td-name">Mr. A.K.Famees</td>
+                <td>N9347691</td>
+                <td>Capital Recruitment International (Pvt) Ltd</td>
+                <td>02 November 2026</td>
+                <td>Urine (Drug Screen 5P)</td>
+                <td><span class="status-pill-minted"><span class="status-dot-green"></span>Verified</span></td>
+              </tr>
+              <tr>
+                <td class="td-booking-id">5095</td>
+                <td class="td-name">Mr. M.A.M.Jareeth</td>
+                <td>N8638776</td>
+                <td>Capital Recruitment International (Pvt) Ltd</td>
+                <td>31 October 2026</td>
+                <td>Urine (Drug Screen 5P)</td>
+                <td><span class="status-pill-minted"><span class="status-dot-green"></span>Verified</span></td>
+              </tr>
+              <tr>
+                <td class="td-booking-id">04444</td>
+                <td class="td-name">Mrs. B.H.N.Dilukshika</td>
+                <td>P1419862</td>
+                <td>Rogers International (Pvt) Ltd</td>
+                <td>13 October 2026</td>
+                <td>Blood (Type 10 B)</td>
+                <td><span class="status-pill-minted"><span class="status-dot-green"></span>Verified</span></td>
+              </tr>
+              <tr>
+                <td class="td-booking-id">31035</td>
+                <td class="td-name">Mr. A.D.R.I.Sameera</td>
+                <td>N10492498</td>
+                <td>Sanduni Foreign Employment Agency</td>
+                <td>17 March 2025</td>
+                <td>Urine (Drug Screen 12P)</td>
+                <td><span class="status-pill-minted"><span class="status-dot-green"></span>Verified</span></td>
+              </tr>
+              <tr>
+                <td class="td-booking-id">30693</td>
+                <td class="td-name">Mr. P.B.M.S.N.Pathirana</td>
+                <td>N10134084</td>
+                <td>Sanduni Foreign Employment Agency</td>
+                <td>22 February 2025</td>
+                <td>Urine (Drug Screen 12P)</td>
+                <td><span class="status-pill-minted"><span class="status-dot-green"></span>Verified</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-pagination-row">
+          <div id="ticketsPaginationSummary">Showing 1 to 5 of 960+ reference records</div>
+          <div class="pagination-controls">
+            <button class="page-btn" id="btnPagePrev">‹</button>
+            <button class="page-btn active" data-page="1">1</button>
+            <button class="page-btn" data-page="2">2</button>
+            <button class="page-btn" data-page="3">3</button>
+            <span style="color:#94a3b8; padding: 0 4px;">...</span>
+            <button class="page-btn" data-page="192">192</button>
+            <button class="page-btn" id="btnPageNext">›</button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ══════════════════════════════════
+         PANE 1: TESTS
+    ══════════════════════════════════ -->
+    <section id="paneTests" class="tab-pane">
+      <div class="page-heading">
+        <div class="page-heading-row">
+          <div>
+            <h2>Test Management</h2>
+            <p>Enable or disable individual laboratory tests</p>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-success btn-sm" id="enableAllTestsBtn">Enable All</button>
+            <button class="btn btn-danger btn-sm" id="disableAllTestsBtn">Disable All</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <div class="card-head">
+          <div class="card-title-group">
+            <h2>Available Tests</h2>
+            <p>Activate or deactivate tests per category</p>
+          </div>
+          <div class="search-wrap" style="width:240px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" id="testSearchInput" class="form-input" placeholder="Search tests..." style="height:38px;">
+          </div>
+        </div>
+        <div class="card-body" style="padding:16px;">
+          <div id="categorizedTestsGrid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════
+         PANE 2: PACKAGES
+    ══════════════════════════════════ -->
+    <section id="panePackages" class="tab-pane">
+      <div class="page-heading">
+        <div class="page-heading-row">
+          <div>
+            <h2>Package Management</h2>
+            <p>Create and manage test bundles for quick ordering</p>
+          </div>
+          <button class="btn btn-primary btn-sm" id="refreshPackagesBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/>
+            </svg>
+            Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- Existing packages -->
+      <div class="admin-card" style="margin-bottom:20px;">
+        <div class="card-head">
+          <div class="card-title-group">
+            <h2>Existing Packages</h2>
+            <p>All configured test packages</p>
+          </div>
+          <span class="badge badge-indigo" id="customCountBadge2">— packages</span>
+        </div>
+        <div class="table-responsive">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>Package Name</th>
+                <th>Code</th>
+                <th>Tests Included</th>
+                <th>Description</th>
+                <th style="text-align:center;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="packagesTableBody">
+              <tr><td colspan="5" style="text-align:center;padding:36px;color:#94a3b8;">Loading packages...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Add / Edit package form -->
+      <div class="admin-card">
+        <div class="card-head">
+          <div class="card-title-group">
+            <h2>Add / Edit Package</h2>
+            <p>Define a new test bundle or update an existing one</p>
+          </div>
+          <span class="badge badge-indigo" id="pkgSelectedCount">0 tests selected</span>
+        </div>
+        <div class="card-body">
+          <form id="packageForm">
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label" for="pkgName">Package Name <span class="req">*</span></label>
+                <input type="text" id="pkgName" class="form-input" placeholder="e.g. Full Health Checkup" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="pkgCode">Package Code <span class="req">*</span></label>
+                <input type="text" id="pkgCode" class="form-input" placeholder="e.g. FHC-01" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="pkgDescription">Description</label>
+              <textarea id="pkgDescription" class="form-input" placeholder="Brief description of this package..."></textarea>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Included Tests</label>
+              <div style="display:flex; gap:8px; margin-bottom:10px;">
+                <div class="search-wrap" style="flex:1;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                  <input type="text" id="pkgSearchTests" class="form-input" placeholder="Search tests..." style="height:38px;">
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm" id="pkgSelectAllTestsBtn">Select All</button>
+                <button type="button" class="btn btn-secondary btn-sm" id="pkgClearAllTestsBtn">Clear All</button>
+              </div>
+              <div id="packageTestsChecklist"></div>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:4px;">
+              <button type="submit" class="btn btn-primary" id="savePackageBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Save Package
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════
+         PANE 3: CUSTOM TESTS
+    ══════════════════════════════════ -->
+    <section id="paneCustom" class="tab-pane">
+      <div class="page-heading">
+        <div class="page-heading-row">
+          <div>
+            <h2>Custom Test Builder</h2>
+            <p>Define specialized tests with custom reference ranges</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add custom test -->
+      <div class="admin-card" style="margin-bottom:20px;">
+        <div class="card-head">
+          <div class="card-title-group">
+            <h2>Add New Custom Test</h2>
+            <p>Fill in the details to register a new test</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <form id="customTestForm">
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label" for="ctName">Test Name <span class="req">*</span></label>
+                <input type="text" id="ctName" class="form-input" placeholder="e.g. Serum Ferritin" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="ctLabel">Display Label</label>
+                <input type="text" id="ctLabel" class="form-input" placeholder="Short label shown on report">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="ctCategory">Category <span class="req">*</span></label>
+                <input type="text" id="ctCategory" class="form-input" placeholder="e.g. Biochemistry" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="ctType">Report Type</label>
+                <select id="ctType" class="form-select">
+                  <option value="">Standard</option>
+                  <option value="10b">Type 10B</option>
+                  <option value="custom">Custom</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="ctUnit">Unit</label>
+                <input type="text" id="ctUnit" class="form-input" placeholder="e.g. ng/mL">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="ctRef">Reference Range</label>
+                <input type="text" id="ctRef" class="form-input" placeholder="e.g. 12 - 300">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="ctMethod">Method</label>
+                <input type="text" id="ctMethod" class="form-input" placeholder="e.g. ELISA">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="ctSpecimen">Specimen</label>
+                <input type="text" id="ctSpecimen" class="form-input" placeholder="e.g. Serum">
+              </div>
+            </div>
+            <div class="form-group" id="ctOptionsWrap">
+              <label class="form-label" for="ctOptions">Options / Values (comma separated)</label>
+              <input type="text" id="ctOptions" class="form-input" placeholder="e.g. Positive, Negative, Borderline">
+            </div>
+            <button type="submit" class="btn btn-primary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Custom Test
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Custom tests list -->
+      <div class="admin-card">
+        <div class="card-head">
+          <div class="card-title-group">
+            <h2>Custom Test Registry</h2>
+            <p>All user-defined tests in the system</p>
+          </div>
+          <span class="badge badge-indigo" id="customStatBadge">— tests</span>
+        </div>
+        <div class="table-responsive">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>Test Name</th>
+                <th>Category</th>
+                <th>Unit</th>
+                <th>Reference Range</th>
+                <th>Method</th>
+                <th style="text-align:center;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="customTestsTableBody">
+              <tr><td colspan="6" style="text-align:center;padding:36px;color:#94a3b8;">No custom tests defined yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════
+         PANE 4: EXPORT POLICIES
+    ══════════════════════════════════ -->
+    <section id="paneExports" class="tab-pane">
+      <div class="page-heading">
+        <div class="page-heading-row">
+          <div>
+            <h2>Export Policies</h2>
+            <p>Control which file formats staff can generate and download</p>
+          </div>
+          <button class="btn btn-primary btn-sm" id="savePolicyBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+            Save Policies
+          </button>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <div class="card-head">
+          <div class="card-title-group">
+            <h2>Format Permissions</h2>
+            <p>Toggle which export formats are available to users</p>
+          </div>
+        </div>
+        <div class="card-body" style="padding:0 24px;">
+          <div class="policy-row">
+            <div class="policy-info">
+              <strong>PDF Export</strong>
+              <p>Allows generating PDF reports for printing and digital delivery.</p>
+            </div>
+            <label class="switch-toggle" title="Toggle PDF export">
+              <input type="checkbox" id="allowPdfToggle" checked>
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          <div class="policy-row">
+            <div class="policy-info">
+              <strong>Excel / XLSX Export</strong>
+              <p>Allows generating formatted Excel spreadsheet reports.</p>
+            </div>
+            <label class="switch-toggle" title="Toggle Excel export">
+              <input type="checkbox" id="allowExcelToggle" checked>
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          <div class="policy-row">
+            <div class="policy-info">
+              <strong>Word / DOCX Export</strong>
+              <p>Allows generating editable Word document reports.</p>
+            </div>
+            <label class="switch-toggle" title="Toggle Word export">
+              <input type="checkbox" id="allowWordToggle">
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+          <div class="policy-row">
+            <div class="policy-info">
+              <strong>No-Letterhead Mode</strong>
+              <p>Allows printing pure text directly onto pre-printed stationery.</p>
+            </div>
+            <label class="switch-toggle" title="Toggle letterhead mode">
+              <input type="checkbox" id="allowNoLetterheadToggle" checked>
+              <span class="toggle-track"></span>
+            </label>
+          </div>
+        </div>
+        <div style="padding:0 24px 20px;">
+          <div id="saveStatusNotice" class="notice-alert success">
+            Policies saved and synchronized to all active workstations.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════
+         PANE 5: CREDENTIALS & SECURITY
+    ══════════════════════════════════ -->
+    <section id="paneCredentials" class="tab-pane">
+      <div class="page-heading">
+        <div class="page-heading-row">
+          <div>
+            <h2>Security &amp; Credentials</h2>
+            <p>Manage system access, passwords, and emergency lockdown</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lockdown Banner -->
+      <div id="lockdownBanner" class="lockdown-banner">
+        <div class="lockdown-left">
+          <h3 id="lockdownTitle">System Operational &amp; Unlocked</h3>
+          <p>When Emergency Lockdown is active, all test report generation and exports are blocked across all terminals.</p>
+          <div id="lockReasonWrap" style="display:none; margin-top:12px;">
+            <input type="text" id="lockReasonInput" class="form-input" style="max-width:400px; height:38px;" placeholder="Reason (e.g. Routine Maintenance, Audit)">
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:14px;">
+          <span id="lockdownBadge" class="badge badge-green">ALL SYSTEMS LIVE</span>
+          <label class="switch-toggle" title="Toggle Emergency System Lockdown">
+            <input type="checkbox" id="lockdownToggle">
+            <span class="toggle-track"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Password Change Card -->
+      <div class="admin-card">
+        <div class="card-head">
+          <div class="card-title-group">
+            <h2>Master Credentials &amp; PIN Code</h2>
+            <p>Update the Super Admin master password and 4-digit emergency override PIN code.</p>
+          </div>
+        </div>
+        <div class="card-body">
+          <form id="passwordChangeForm" style="max-width:520px;">
+            <div class="form-group">
+              <label class="form-label" for="currentPass">Current Master Password <span class="req">*</span></label>
+              <input type="password" id="currentPass" class="form-input" required autocomplete="current-password" placeholder="Current password">
+            </div>
+            <div style="border:1px solid #e2e8f0; border-radius:12px; padding:16px 20px; margin-bottom:16px; background:#f8fafc;">
+              <p style="font-size:12px; font-weight:700; color:#6366f1; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px;">&#128100; Change Username</p>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" for="newUsernameInput">New Username</label>
+                <input type="text" id="newUsernameInput" class="form-input" placeholder="Leave blank to keep unchanged" autocomplete="username">
+              </div>
+            </div>
+            <div style="border:1px solid #e2e8f0; border-radius:12px; padding:16px 20px; margin-bottom:16px; background:#f8fafc;">
+              <p style="font-size:12px; font-weight:700; color:#6366f1; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px;">&#128273; Change Password &amp; PIN</p>
+              <div class="form-group" style="margin-bottom:12px;">
+                <label class="form-label" for="newPass">New Master Password</label>
+                <input type="password" id="newPass" class="form-input" placeholder="Leave blank to keep unchanged" autocomplete="new-password">
+              </div>
+              <div class="form-group" style="margin-bottom:0;">
+                <label class="form-label" for="newPin">New 4-Digit Security PIN</label>
+                <input type="text" id="newPin" class="form-input" placeholder="e.g. 1234" maxlength="6">
+              </div>
+            </div>
+            <div id="passChangeNotice" class="notice-alert"></div>
+            <button type="submit" class="btn btn-primary" style="margin-top:4px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+              Update Credentials
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════
+         PANE: USER ACCOUNTS & SECURITY
+    ══════════════════════════════════ -->
+    <section id="paneUsers" class="tab-pane">
+      <div class="page-heading">
+        <div class="page-heading-row">
+          <div>
+            <h2>User Accounts &amp; Access Control</h2>
+            <p>Manage staff accounts, credentials, and role-based permissions</p>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary btn-sm" id="openAddUserBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add New User
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Security Status Bar -->
+      <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px;">
+        <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:14px 18px; display:flex; align-items:center; gap:12px; flex:1; min-width:220px; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
+          <span style="display:inline-flex; width:36px; height:36px; border-radius:10px; background:#e0e7ff; color:#4f46e5; align-items:center; justify-content:center; font-size:18px;">&#128274;</span>
+          <div>
+            <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Password Security</div>
+            <div style="font-size:13.5px; font-weight:700; color:#0f172a;">scrypt + Salt (NIST SP 800-132)</div>
+          </div>
+        </div>
+        <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:14px 18px; display:flex; align-items:center; gap:12px; flex:1; min-width:220px; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
+          <span style="display:inline-flex; width:36px; height:36px; border-radius:10px; background:#dcfce7; color:#16a34a; align-items:center; justify-content:center; font-size:18px;">&#128737;</span>
+          <div>
+            <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Anti-Brute Force Shield</div>
+            <div style="font-size:13.5px; font-weight:700; color:#16a34a;">Active (Max 5 Failed Attempts)</div>
+          </div>
+        </div>
+        <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:14px 18px; display:flex; align-items:center; gap:12px; flex:1; min-width:220px; box-shadow:0 1px 3px rgba(0,0,0,0.03);">
+          <span style="display:inline-flex; width:36px; height:36px; border-radius:10px; background:#fef3c7; color:#d97706; align-items:center; justify-content:center; font-size:18px;">&#128101;</span>
+          <div>
+            <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Active Operators</div>
+            <div style="font-size:13.5px; font-weight:700; color:#0f172a;" id="activeUsersCountText">1 Active</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add User Form Card (toggleable or inline) -->
+      <div class="admin-card" id="addUserCard" style="display:none; margin-bottom:20px; border:2px solid #6366f1;">
+        <div class="card-head" style="background:#f8fafc;">
+          <div class="card-title-group">
+            <h2 id="userFormTitle">Create New User Account</h2>
+            <p>Assign login credentials and access tier for a laboratory staff member</p>
+          </div>
+          <button type="button" class="btn btn-secondary btn-xs" id="closeAddUserBtn">Cancel</button>
+        </div>
+        <div class="card-body">
+          <form id="addUserForm" autocomplete="off">
+            <input type="hidden" id="editUserId" value="">
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label" for="newUName">Username <span class="req">*</span></label>
+                <input type="text" id="newUName" class="form-input" placeholder="e.g. lab_technician_01" required autocomplete="off">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="newUFullName">Full Name / Display Name <span class="req">*</span></label>
+                <input type="text" id="newUFullName" class="form-input" placeholder="e.g. Ruwan Jayasuriya" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="newURole">Role &amp; Permissions <span class="req">*</span></label>
+                <select id="newURole" class="form-select">
+                  <option value="operator">Data Entry Operator (Reports &amp; Data Entry)</option>
+                  <option value="technician">Lab Technician (Testing &amp; Verification)</option>
+                  <option value="admin">Administrator (Tests, Packages &amp; Config)</option>
+                  <option value="superadmin">Super Admin (Full Master Control)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="newUStatus">Account Status</label>
+                <select id="newUStatus" class="form-select">
+                  <option value="active">Active (Access Granted)</option>
+                  <option value="inactive">Disabled (Access Blocked)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="newUPass">Password <span class="req" id="newUPassReq">*</span></label>
+                <input type="password" id="newUPass" class="form-input" placeholder="Minimum 4 characters" autocomplete="new-password">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="newUPassConfirm">Confirm Password <span class="req" id="newUPassConfirmReq">*</span></label>
+                <input type="password" id="newUPassConfirm" class="form-input" placeholder="Re-enter password" autocomplete="new-password">
+              </div>
+            </div>
+            <div id="userFormNotice" class="notice-alert"></div>
+            <div style="display:flex; gap:10px; margin-top:8px;">
+              <button type="submit" class="btn btn-primary" id="saveUserBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+                Save User Account
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Users Table Card -->
+      <div class="admin-card">
+        <div class="card-head">
+          <div class="card-title-group">
+            <h2>Authorized Users Registry</h2>
+            <p>All registered accounts permitted to log in to this terminal</p>
+          </div>
+          <div class="search-wrap" style="width:240px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" id="userSearchInput" class="form-input" placeholder="Search user..." style="height:38px;">
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>User / Operator</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Created</th>
+                <th>Last Login</th>
+                <th style="text-align:center;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody">
+              <tr><td colspan="6" style="text-align:center; padding:36px; color:#94a3b8;">Loading user accounts...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════
+         PANE 6: AUDIT TRAIL
+    ══════════════════════════════════ -->
+    <section id="paneAudit" class="tab-pane">
+      <div class="page-heading">
+        <div class="page-heading-row">
+          <div>
+            <h2>Security Audit Trail</h2>
+            <p>Chronological log of all administrative changes, report exports, and access requests</p>
+          </div>
+          <button type="button" class="btn btn-danger btn-sm" id="clearAuditBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+            Clear Audit Log
+          </button>
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <div class="table-responsive">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Action</th>
+                <th>Test / Scope</th>
+                <th>Patient / Details</th>
+                <th style="text-align:center;">Status</th>
+              </tr>
+            </thead>
+            <tbody id="auditTableBody">
+              <tr>
+                <td colspan="5" style="text-align:center; padding:48px; color:#94a3b8;">Loading audit events...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /main-wrapper -->
+</div><!-- /dashboardView -->
+
+<!-- Toast notification -->
+<div id="toast" class="admin-toast"></div>
+
+<script>
+  // Nav tab switching
+  document.querySelectorAll('.tab-btn[data-pane]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active-pane'));
+      btn.classList.add('active');
+      const pane = document.getElementById(btn.dataset.pane);
+      if (pane) pane.classList.add('active-pane');
+      // Update topbar title
+      const labels = {
+        paneDashboard: 'Overview',
+        paneTests: 'Tests',
+        panePackages: 'Packages',
+        paneCustom: 'Custom Tests',
+        paneUsers: 'User Accounts',
+        paneExports: 'Export Policies',
+        paneCredentials: 'Security',
+        paneAudit: 'Audit Trail'
+      };
+      const el = document.getElementById('topbarPageName');
+      if (el) el.textContent = labels[btn.dataset.pane] || '';
+    });
+  });
+
+  // Mirror stat cards to topbar stats (called from admin.js after data loads)
+  function mirrorStats() {
+    const total = document.getElementById('statTotalTestsCard');
+    const topTotal = document.getElementById('statTotalTests');
+    if (total && topTotal) topTotal.textContent = total.textContent;
+    const pkgs = document.getElementById('statPackagesCard');
+    const topPkgs = document.getElementById('statPackages');
+    if (pkgs && topPkgs) topPkgs.textContent = pkgs.textContent;
+  }
+  // Mirror on stat change
+  const _origStatObs = setInterval(mirrorStats, 2000);
+</script>
+
+<script src="/admin.js?v=20261105-users-v8"></script>
+</body>
+</html>
