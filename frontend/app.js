@@ -1006,6 +1006,7 @@ function updateTest() {
   if (repeatedWrap) {
     repeatedWrap.hidden = ['Urine Full Report', 'Type 10 B', 'Type 10 B with urine drug', 'Urine Drug Screening', 'Urine Drug Screening (12 Drugs)', 'Urine Drug Screening (5 Drugs)', 'Type 7', 'Type 11', 'Shipping'].includes(name);
   }
+  isManualConfirmToggled = false; // reset manual override when test changes
   autoEvaluateRepeatedConfirmed();
   $('#test_result').hidden = ['SGPT & SGOT', 'Lipid Profile', 'Urine Full Report', 'Haemoglobin A1C', 'Full Blood Count', 'Total ? - HCG Concentration', 'Total β - HCG Concentration', 'BETA H.C.G.', 'Type 10 B', 'Type 10 B with urine drug', 'Urine Drug Screening', 'Urine Drug Screening (12 Drugs)', 'Urine Drug Screening (5 Drugs)', 'Type 7', 'Type 11', 'Shipping'].includes(name) || isCustomAdminTest;
 
@@ -1819,12 +1820,13 @@ function updatePreview() {
       let num = String(val).replace(/\s*i?u\/l\b/gi, '').trim();
       return num ? `${num} iu/l` : '?';
     };
+    const _hasRc = !!(data.result_note && String(data.result_note).trim() !== '');
     body.innerHTML = `
       <tr><td>SGPT</td><td><b>${formatLab(pt)}</b></td><td>Upto 45 iu/l (Men)</td></tr>
-      <tr><td></td><td><b>[Repeated and Confirmed]</b></td><td>Upto 34 iu/l (Women)</td></tr>
+      ${_hasRc ? '<tr><td></td><td><b>[Repeated and Confirmed]</b></td><td>Upto 34 iu/l (Women)</td></tr>' : ''}
       <tr style="height:12px;"><td></td><td></td><td></td></tr>
       <tr><td>SGOT</td><td><b>${formatLab(ot)}</b></td><td>Upto 35 iu/l (Men)</td></tr>
-      <tr><td></td><td><b>[Repeated and Confirmed]</b></td><td>Upto 31 iu/l (Women)</td></tr>
+      ${_hasRc ? '<tr><td></td><td><b>[Repeated and Confirmed]</b></td><td>Upto 31 iu/l (Women)</td></tr>' : ''}
     `;
     refs.innerHTML = '';
   } else if (data.test_name === 'SGOT') {
@@ -1835,9 +1837,10 @@ function updatePreview() {
       let num = String(val).replace(/\s*i?u\/l\b/gi, '').trim();
       return num ? `${num} iu/l` : '?';
     };
+    const _hasRc2 = !!(data.result_note && String(data.result_note).trim() !== '');
     body.innerHTML = `
       <tr><td>SGOT</td><td><b>${formatLab(res)}</b></td><td>Upto 35 iu/l (Men)</td></tr>
-      <tr><td></td><td><b>[Repeated and Confirmed]</b></td><td>Upto 31 iu/l (Women)</td></tr>
+      ${_hasRc2 ? '<tr><td></td><td><b>[Repeated and Confirmed]</b></td><td>Upto 31 iu/l (Women)</td></tr>' : ''}
     `;
     refs.innerHTML = '';
   } else if (data.test_name === 'SGPT') {
@@ -1848,9 +1851,10 @@ function updatePreview() {
       let num = String(val).replace(/\s*i?u\/l\b/gi, '').trim();
       return num ? `${num} iu/l` : '?';
     };
+    const _hasRc3 = !!(data.result_note && String(data.result_note).trim() !== '');
     body.innerHTML = `
       <tr><td>SGPT</td><td><b>${formatLab(res)}</b></td><td>Upto 45 iu/l (Men)</td></tr>
-      <tr><td></td><td><b>[Repeated and Confirmed]</b></td><td>Upto 34 iu/l (Women)</td></tr>
+      ${_hasRc3 ? '<tr><td></td><td><b>[Repeated and Confirmed]</b></td><td>Upto 34 iu/l (Women)</td></tr>' : ''}
     `;
     refs.innerHTML = '';
   } else if (data.test_name === 'Total ? - HCG Concentration') {
@@ -2218,9 +2222,24 @@ $('#refSearch').onkeydown = e => {
   }
 };
 $('#test_name').onchange = updateTest;
-$('#test_result').oninput = () => debouncedUpdatePreview();
-$('#sgpt_result')?.addEventListener('input', () => debouncedUpdatePreview());
-$('#sgot_result')?.addEventListener('input', () => debouncedUpdatePreview());
+$('#test_result').oninput = () => { autoEvaluateRepeatedConfirmed(); debouncedUpdatePreview(); };
+$('#sgpt_result')?.addEventListener('input', () => { autoEvaluateRepeatedConfirmed(); debouncedUpdatePreview(); });
+$('#sgot_result')?.addEventListener('input', () => { autoEvaluateRepeatedConfirmed(); debouncedUpdatePreview(); });
+
+// Repeated & Confirmed checkbox — manual override tracking
+(function() {
+  const cb = document.getElementById('enable_repeated_confirmed');
+  if (cb) {
+    cb.addEventListener('change', () => {
+      isManualConfirmToggled = true;
+      const noteHidden = document.getElementById('result_note');
+      if (noteHidden) {
+        noteHidden.value = cb.checked ? '[Repeated and Confirmed]' : '';
+      }
+      debouncedUpdatePreview();
+    });
+  }
+})();
 
 // Patient detail fields — preview updates as user types (no search needed)
 ['[name="fname"]','[name="ref_no"]','[name="age"]','[name="gender"]','[name="passport_no"]','[name="medical_date"]'].forEach(sel => {
