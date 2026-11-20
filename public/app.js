@@ -492,12 +492,17 @@ function collect() {
     // Include differential count flag from checkbox
     const diffChk = $('#fbc_include_diff');
     data.fbc_include_diff = diffChk && diffChk.checked ? '1' : '0';
-    if (window.h360RunTime) {
-      data.run_time = window.h360RunTime;
-    }
-    if (window.h360TestTime) {
-      data.test_time = window.h360TestTime;
-    }
+
+    const customFbcTime = ($('#fbcTimePicker')?.value || '').trim();
+    const effectiveTime = customFbcTime || window.h360TestTime || data.report_time || currentGenTime;
+    data.test_time = effectiveTime;
+
+    const effectiveDate = (window.isManualDateActive && window.manualSelectedDateFormatted)
+      ? window.manualSelectedDateFormatted
+      : (data.medical_date || reportDate(new Date()));
+
+    data.medical_date = effectiveDate;
+    data.run_time = `${effectiveDate} ${effectiveTime}`;
   }
   const nowGen = new Date();
   const currentGenTime = nowGen.toLocaleTimeString('en-US', { timeZone: 'Asia/Colombo', hour: 'numeric', minute: '2-digit' });
@@ -863,6 +868,22 @@ function setPatient(record) {
   const prefix = gender === 'male' ? 'Mr.' : gender === 'female' ? 'Ms.' : '';
   const formattedFullName = prefix ? `${prefix} ${rawFullName}` : rawFullName;
 
+  const rawMedDate = record.medical_date || record.reg_date || '';
+  const mIso = String(rawMedDate).match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (mIso) {
+    window.originalPatientDateISO = mIso[0];
+  } else {
+    const dObj = new Date(rawMedDate);
+    if (!isNaN(dObj.getTime())) {
+      const y = dObj.getFullYear();
+      const m = String(dObj.getMonth() + 1).padStart(2, '0');
+      const d = String(dObj.getDate()).padStart(2, '0');
+      window.originalPatientDateISO = `${y}-${m}-${d}`;
+    } else {
+      window.originalPatientDateISO = getTodayISO();
+    }
+  }
+
   const normalized = {
     ...record,
     fname: reportName(record),
@@ -885,6 +906,14 @@ function setPatient(record) {
   const displayRefNo = formatMrdDisplay(cleanedRef || record.ref_no, record.raw_ref_no || record.ref_no);
   const refDisplayEl = document.querySelector('[data-show="ref_no"]');
   if (refDisplayEl) refDisplayEl.textContent = displayRefNo;
+
+  const fbcPicker = $('#fbcDatePicker');
+  if (fbcPicker) {
+    fbcPicker.value = window.isManualDateActive ? (window.manualSelectedDateISO || window.originalPatientDateISO) : window.originalPatientDateISO;
+  }
+  if ($('#fbcTimePicker')) {
+    $('#fbcTimePicker').value = record.report_time || record.test_time || '';
+  }
 
   $('#loadedBadge').textContent = 'Patient loaded';
   $('#loadedBadge').classList.add('loaded');
@@ -1668,10 +1697,16 @@ function updatePreview() {
       $('#fbcPrevSampleId').textContent = sId ? formatMrdDisplay(sId, currentPatientRecord?.raw_ref_no) : '—';
     }
     const nowGenTime = new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Colombo', hour: 'numeric', minute: '2-digit' });
-    const effectiveTime = (data.test_time || data.report_time || nowGenTime);
+    const customFbcTime = ($('#fbcTimePicker')?.value || '').trim();
+    const effectiveTime = customFbcTime || (data.test_time || data.report_time || nowGenTime);
     const cleanEffectiveTime = (effectiveTime !== '11:08' && !effectiveTime.includes('undefined')) ? effectiveTime : nowGenTime;
-    const fbcRunTimeDisplay = data.run_time || window.h360RunTime || `${data.medical_date || reportDate(new Date())} ${cleanEffectiveTime}`;
+    const effectiveDate = (window.isManualDateActive && window.manualSelectedDateFormatted)
+      ? window.manualSelectedDateFormatted
+      : (data.medical_date || reportDate(new Date()));
+    const fbcRunTimeDisplay = `${effectiveDate} ${cleanEffectiveTime}`;
     if ($('#fbcPrevRunTime')) $('#fbcPrevRunTime').textContent = fbcRunTimeDisplay;
+    if ($('#fbcRunTimeBadgeDisplay')) $('#fbcRunTimeBadgeDisplay').textContent = fbcRunTimeDisplay;
+    if ($('#fbcTimePicker') && !$('#fbcTimePicker').value) $('#fbcTimePicker').value = cleanEffectiveTime;
     const cleanAge = String(data.age || '').replace(/\s*years?/i, '').trim();
     if ($('#fbcPrevAge')) $('#fbcPrevAge').textContent = `${cleanAge || '—'}   Year`;
 
@@ -3844,6 +3879,8 @@ function setManualDateMode(active, chosenISO = '') {
     setValue('medical_date', orig);
     const hiddenDate = $('#reportForm [name="medical_date"]');
     if (hiddenDate) hiddenDate.value = orig;
+    const fbcPicker = $('#fbcDatePicker');
+    if (fbcPicker) fbcPicker.value = window.originalPatientDateISO || getTodayISO();
     debouncedUpdatePreview();
     toast('Switched to System Date');
   }
@@ -3860,6 +3897,9 @@ function applyManualDate(isoString) {
 
   const txtDisplay = $('#manualDateTextDisplay');
   if (txtDisplay) txtDisplay.textContent = formatted;
+
+  const fbcPicker = $('#fbcDatePicker');
+  if (fbcPicker && fbcPicker.value !== isoString) fbcPicker.value = isoString;
 
   // Sync to Patient details display and hidden form
   setValue('medical_date', formatted);
@@ -3927,6 +3967,50 @@ function setupDateChangeModule() {
       toast('Type 10 B (with FBC & DC) selected!');
     }
   });
+
+  $('#quickSelectFbcBtn')?.addEventListener('click', () => {
+    setManualDateMode(true);
+    const tName = $('#test_name');
+    if (tName) {
+      tName.value = 'Full Blood Count';
+      tName.dispatchEvent(new Event('change'));
+    }
+    const rType = $('#report_type');
+    if (rType) {
+      rType.value = 'Full Blood Count';
+      rType.dispatchEvent(new Event('change'));
+    }
+    $('#fbcResults')?.scrollIntoView({ behavior: 'smooth' });
+    toast('Full Blood Count (FBC) selected with Date Change active!');
+  });
+
+  // FBC Date Picker
+  $('#fbcDatePicker')?.addEventListener('change', e => {
+    if (e.target.value) {
+      setManualDateMode(true, e.target.value);
+      toast('FBC Date set to ' + window.manualSelectedDateFormatted);
+    }
+  });
+
+  // FBC Date Preset buttons
+  $$('.fbc-date-preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const offset = parseInt(btn.dataset.days || '0', 10);
+      const iso = getOffsetISO(offset);
+      setManualDateMode(true, iso);
+      toast('FBC Date updated: ' + window.manualSelectedDateFormatted);
+    });
+  });
+
+  // Reset FBC Date button
+  $('#resetFbcDateBtn')?.addEventListener('click', () => {
+    setManualDateMode(false);
+    toast('FBC Date reset to patient date');
+  });
+
+  // FBC Time Picker
+  $('#fbcTimePicker')?.addEventListener('input', () => debouncedUpdatePreview());
+  $('#fbcTimePicker')?.addEventListener('change', () => debouncedUpdatePreview());
 }
 
 // Initialize Date Change Module

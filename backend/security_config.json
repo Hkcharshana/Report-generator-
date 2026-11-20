@@ -235,6 +235,18 @@
   },
   "auditLog": [
     {
+      "id": "mwoq3i777f843556",
+      "timestamp": "2026-11-20T08:34:26.659Z",
+      "action": "EXPORT_PDF",
+      "test_name": "BETA H.C.G.",
+      "ref_no": "00004291",
+      "passport_no": "N11401493",
+      "patient_name": "Ms. S. Nithya",
+      "username": "chathura",
+      "status": "SUCCESS",
+      "ip": "127.0.0.1"
+    },
+    {
       "id": "mwopg6kd7138406d",
       "timestamp": "2026-11-20T08:16:18.493Z",
       "action": "EXPORT_PDF",
@@ -3218,18 +3230,6 @@
       "ref_no": "05341",
       "passport_no": "P1343333",
       "patient_name": "Ms. M.S.K. Kularathne",
-      "username": "-",
-      "status": "SUCCESS",
-      "ip": "127.0.0.1"
-    },
-    {
-      "id": "mwad1zo007c41630",
-      "timestamp": "2026-11-10T07:20:34.512Z",
-      "action": "EXPORT_EXCEL",
-      "test_name": "Type 10 B",
-      "ref_no": "05337",
-      "passport_no": "N11455439",
-      "patient_name": "Mr. E.A.D. Madushan",
       "username": "-",
       "status": "SUCCESS",
       "ip": "127.0.0.1"

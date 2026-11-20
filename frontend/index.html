@@ -217,10 +217,16 @@
                 <span style="font-size:11.5px; color:#047857;">Set any custom date for patient reports. Applies to Type 10 B, FBC, Excel &amp; PDF exports.</span>
               </div>
             </div>
-            <button type="button" class="btn secondary btn-xs" id="quickSelectType10bBtn" style="background:#0d9488; color:#fff; border:none; padding:7px 15px; border-radius:8px; font-weight:700; cursor:pointer;">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:4px;"><polyline points="20 6 9 17 4 12"/></svg>
-              Select Type 10 B (with FBC &amp; DC)
-            </button>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button type="button" class="btn secondary btn-xs" id="quickSelectFbcBtn" style="background:#dc2626; color:#fff; border:none; padding:7px 14px; border-radius:8px; font-weight:700; cursor:pointer;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:4px;"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                Select Full Blood Count (FBC)
+              </button>
+              <button type="button" class="btn secondary btn-xs" id="quickSelectType10bBtn" style="background:#0d9488; color:#fff; border:none; padding:7px 14px; border-radius:8px; font-weight:700; cursor:pointer;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle; margin-right:4px;"><polyline points="20 6 9 17 4 12"/></svg>
+                Select Type 10 B (with FBC &amp; DC)
+              </button>
+            </div>
           </div>
 
           <div style="display:grid; grid-template-columns:auto 1fr auto; gap:12px; align-items:center; background:#ffffff; border:1px solid #bbf7d0; padding:12px 14px; border-radius:8px;">
@@ -768,6 +774,49 @@
               <span class="fbc-status-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg></span>
               <span id="fbcStatusMsg">Latest H360 result ready</span>
               <button type="button" class="btn-xs" id="applyLatestH360Btn">Apply</button>
+            </div>
+
+            <!-- FBC Date Change Control Bar -->
+            <div id="fbcDateChangePanel" style="background:linear-gradient(135deg, #fef2f2, #fff1f2); border:1.5px solid #fecdd3; border-radius:10px; padding:12px 16px; margin:14px 0 16px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span style="display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:6px; background:#dc2626; color:#fff;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
+                  </span>
+                  <div>
+                    <strong style="color:#991b1b; font-size:13px; display:block;">Full Blood Count Date &amp; Time (වාර්තා දිනය වෙනස් කිරීම)</strong>
+                    <span style="font-size:11.5px; color:#b91c1c;">Modify the Run Time date and time printed on the FBC Hematology Analysis Report.</span>
+                  </div>
+                </div>
+                <div style="text-align:right;">
+                  <span id="fbcDateBadge" style="display:inline-block; font-size:12px; font-weight:700; color:#991b1b; background:#fee2e2; padding:4px 12px; border-radius:6px; border:1px solid #fca5a5;">
+                    Report Run Time: <span id="fbcRunTimeBadgeDisplay">—</span>
+                  </span>
+                </div>
+              </div>
+
+              <div style="display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:center; background:#ffffff; border:1px solid #fecdd3; padding:10px 14px; border-radius:8px;">
+                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <label for="fbcDatePicker" style="font-size:11.5px; font-weight:700; color:#991b1b; text-transform:uppercase;">Date:</label>
+                    <input type="date" id="fbcDatePicker" style="padding:5px 8px; border:1.5px solid #dc2626; border-radius:6px; font-size:13px; font-weight:700; color:#991b1b; outline:none;">
+                  </div>
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <label for="fbcTimePicker" style="font-size:11.5px; font-weight:700; color:#991b1b; text-transform:uppercase;">Time:</label>
+                    <input type="text" id="fbcTimePicker" placeholder="e.g. 10:45 AM" style="width:105px; padding:5px 8px; border:1.5px solid #dc2626; border-radius:6px; font-size:12.5px; font-weight:700; color:#991b1b; outline:none;">
+                  </div>
+                </div>
+
+                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                  <span style="font-size:11px; color:#64748b; font-weight:600; margin-right:2px;">Quick Presets:</span>
+                  <button type="button" class="btn secondary btn-xs fbc-date-preset-btn" data-days="0" style="padding:4px 9px; font-size:11px;">Today</button>
+                  <button type="button" class="btn secondary btn-xs fbc-date-preset-btn" data-days="-1" style="padding:4px 9px; font-size:11px;">Yesterday (-1d)</button>
+                  <button type="button" class="btn secondary btn-xs fbc-date-preset-btn" data-days="-2" style="padding:4px 9px; font-size:11px;">-2 Days</button>
+                  <button type="button" class="btn secondary btn-xs fbc-date-preset-btn" data-days="-3" style="padding:4px 9px; font-size:11px;">-3 Days</button>
+                  <button type="button" class="btn secondary btn-xs fbc-date-preset-btn" data-days="-7" style="padding:4px 9px; font-size:11px;">-1 Week</button>
+                  <button type="button" class="btn secondary btn-xs" id="resetFbcDateBtn" style="padding:4px 9px; font-size:11px; color:#b91c1c;">Reset to Patient Date</button>
+                </div>
+              </div>
             </div>
 
             <div class="fbc-group-card">

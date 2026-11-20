@@ -5889,7 +5889,14 @@ app.post('/api/export/pdf', async (req, res) => {
       const repDate = reportDate(data) || currentGenDate;
       const fbcTime = pdfVal(data, 'test_time', pdfVal(data, 'report_time', pdfVal(data, 'issued_time', '')));
       const cleanFbcTime = (fbcTime && fbcTime !== '11:08' && !fbcTime.includes('undefined')) ? fbcTime : currentGenTime;
-      const runTime = pdfVal(data, 'run_time', `${repDate} ${cleanFbcTime}`);
+      let runTime = pdfVal(data, 'run_time', '');
+      if (!runTime) {
+        runTime = `${repDate} ${cleanFbcTime}`;
+      } else {
+        const timeMatch = runTime.match(/(\d{1,2}:\d{2}(?::\d{2})?\s*(?:AM|PM)?)$/i);
+        const timeToUse = timeMatch ? timeMatch[1] : cleanFbcTime;
+        runTime = `${repDate} ${timeToUse}`;
+      }
       const rawAge = pdfVal(data, 'age', '35');
       const cleanAge = String(rawAge).replace(/\s*years?/i, '').trim();
 
