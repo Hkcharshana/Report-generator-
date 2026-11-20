@@ -413,7 +413,11 @@ $('#loginForm')?.addEventListener('submit', async e => {
       toast(`Connected to NeoSys ${data.branchLabel || getBranchMeta(currentBranch).label} as ${data.username || user}`);
     } else {
       if (errBox) {
-        errBox.textContent = data.error || `NeoSys ${getBranchMeta(currentBranch).label} login failed. Check username and password.`;
+        if (data.locked) {
+          errBox.innerHTML = `<strong>🔒 SYSTEM LOCKDOWN ACTIVE:</strong> ${data.error || 'System login is disabled by Administrator.'}`;
+        } else {
+          errBox.textContent = data.error || `NeoSys ${getBranchMeta(currentBranch).label} login failed. Check username and password.`;
+        }
         errBox.hidden = false;
       }
       toast(data.error || 'NeoSys login failed');
@@ -445,6 +449,9 @@ $('#logoutBtn')?.addEventListener('click', async () => {
 function collect() {
   const data = {};
   $$('#reportForm [name]').forEach(x => data[x.name] = x.value);
+  const activeUser = localStorage.getItem('neosys-user-' + currentBranch) || 'Chathura';
+  data.generatedBy = activeUser;
+  data.branch = currentBranch;
   if (!data.full_name && currentPatientRecord) {
     const rawFull = (currentPatientRecord.full_name || currentPatientRecord.patient_name || `${currentPatientRecord.fname || ''} ${currentPatientRecord.lname || ''}`.trim()).replace(/^(mr|mrs|ms|miss|dr)\.?\s*/i, '').trim();
     const gender = (currentPatientRecord.gender || data.gender || '').toLowerCase();
@@ -2833,17 +2840,55 @@ async function fetchSecurityStatus() {
 function applySecurityStatusToUI(status) {
   if (!status) return;
 
-  // 1. Emergency lockdown banner
+  // 1. Emergency lockdown banner & Login Screen lockdown
   const banner = $('#systemLockBanner');
   const bannerReason = $('#systemLockBannerReason');
   if (banner) {
     if (status.lockAllReports) {
       banner.hidden = false;
       if (bannerReason) {
-        bannerReason.textContent = status.lockReason || 'Report generation is temporarily restricted by Super Admin.';
+        bannerReason.textContent = status.lockReason || 'Report generation and logins are currently restricted by Super Admin.';
       }
     } else {
       banner.hidden = true;
+    }
+  }
+
+  // Update login screen if lockdown is active
+  const loginBtn = $('#loginBtn');
+  const loginBtnText = $('#loginBtnText');
+  let loginLockStrip = $('#loginLockdownAlert');
+
+  if (status.lockAllReports) {
+    if (loginBtn) {
+      loginBtn.disabled = true;
+      loginBtn.style.opacity = '0.6';
+      loginBtn.style.cursor = 'not-allowed';
+    }
+    if (loginBtnText) {
+      loginBtnText.textContent = '🔒 System Locked Down (Access Blocked)';
+    }
+    const loginForm = $('#loginForm');
+    if (!loginLockStrip && loginForm) {
+      loginLockStrip = document.createElement('div');
+      loginLockStrip.id = 'loginLockdownAlert';
+      loginLockStrip.style.cssText = 'background:#fef2f2; border:1.5px solid #ef4444; border-radius:10px; padding:12px 14px; margin-bottom:16px; color:#991b1b; font-size:12.5px; font-weight:600; display:flex; align-items:center; gap:10px;';
+      loginLockStrip.innerHTML = '<span style="font-size:18px;">🚨</span><div><div>SYSTEM LOCKDOWN ACTIVE</div><div style="font-size:11px; font-weight:400; color:#b91c1c; margin-top:2px;">System login is disabled by Administrator (' + (status.lockReason || 'Maintenance') + ').</div></div>';
+      loginForm.prepend(loginLockStrip);
+    } else if (loginLockStrip) {
+      loginLockStrip.style.display = 'flex';
+    }
+  } else {
+    if (loginBtn) {
+      loginBtn.disabled = false;
+      loginBtn.style.opacity = '1';
+      loginBtn.style.cursor = 'pointer';
+    }
+    if (loginBtnText) {
+      loginBtnText.textContent = `Sign In to ${getBranchMeta(currentBranch).label} Branch`;
+    }
+    if (loginLockStrip) {
+      loginLockStrip.style.display = 'none';
     }
   }
 

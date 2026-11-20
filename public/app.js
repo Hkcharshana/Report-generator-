@@ -413,7 +413,11 @@ $('#loginForm')?.addEventListener('submit', async e => {
       toast(`Connected to NeoSys ${data.branchLabel || getBranchMeta(currentBranch).label} as ${data.username || user}`);
     } else {
       if (errBox) {
-        errBox.textContent = data.error || `NeoSys ${getBranchMeta(currentBranch).label} login failed. Check username and password.`;
+        if (data.locked) {
+          errBox.innerHTML = `<strong>🔒 SYSTEM LOCKDOWN ACTIVE:</strong> ${data.error || 'System login is disabled by Administrator.'}`;
+        } else {
+          errBox.textContent = data.error || `NeoSys ${getBranchMeta(currentBranch).label} login failed. Check username and password.`;
+        }
         errBox.hidden = false;
       }
       toast(data.error || 'NeoSys login failed');
@@ -445,6 +449,9 @@ $('#logoutBtn')?.addEventListener('click', async () => {
 function collect() {
   const data = {};
   $$('#reportForm [name]').forEach(x => data[x.name] = x.value);
+  const activeUser = localStorage.getItem('neosys-user-' + currentBranch) || 'Chathura';
+  data.generatedBy = activeUser;
+  data.branch = currentBranch;
   if (!data.full_name && currentPatientRecord) {
     const rawFull = (currentPatientRecord.full_name || currentPatientRecord.patient_name || `${currentPatientRecord.fname || ''} ${currentPatientRecord.lname || ''}`.trim()).replace(/^(mr|mrs|ms|miss|dr)\.?\s*/i, '').trim();
     const gender = (currentPatientRecord.gender || data.gender || '').toLowerCase();
@@ -1006,6 +1013,7 @@ function updateTest() {
   if (repeatedWrap) {
     repeatedWrap.hidden = ['Urine Full Report', 'Type 10 B', 'Type 10 B with urine drug', 'Urine Drug Screening', 'Urine Drug Screening (12 Drugs)', 'Urine Drug Screening (5 Drugs)', 'Type 7', 'Type 11', 'Shipping'].includes(name);
   }
+  isManualConfirmToggled = false; // reset manual override when test changes
   autoEvaluateRepeatedConfirmed();
   $('#test_result').hidden = ['SGPT & SGOT', 'Lipid Profile', 'Urine Full Report', 'Haemoglobin A1C', 'Full Blood Count', 'Total ? - HCG Concentration', 'Total β - HCG Concentration', 'BETA H.C.G.', 'Type 10 B', 'Type 10 B with urine drug', 'Urine Drug Screening', 'Urine Drug Screening (12 Drugs)', 'Urine Drug Screening (5 Drugs)', 'Type 7', 'Type 11', 'Shipping'].includes(name) || isCustomAdminTest;
 
@@ -1819,12 +1827,13 @@ function updatePreview() {
       let num = String(val).replace(/\s*i?u\/l\b/gi, '').trim();
       return num ? `${num} iu/l` : '?';
     };
+    const _hasRc = !!(data.result_note && String(data.result_note).trim() !== '');
     body.innerHTML = `
       <tr><td>SGPT</td><td><b>${formatLab(pt)}</b></td><td>Upto 45 iu/l (Men)</td></tr>
-      <tr><td></td><td><b>[Repeated and Confirmed]</b></td><td>Upto 34 iu/l (Women)</td></tr>
+      ${_hasRc ? '<tr><td></td><td><b>[Repeated and Confirmed]</b></td><td>Upto 34 iu/l (Women)</td></tr>' : ''}
       <tr style="height:12px;"><td></td><td></td><td></td></tr>
       <tr><td>SGOT</td><td><b>${formatLab(ot)}</b></td><td>Upto 35 iu/l (Men)</td></tr>
-      <tr><td></td><td><b>[Repeated and Confirmed]</b></td><td>Upto 31 iu/l (Women)</td></tr>
+      ${_hasRc ? '<tr><td></td><td><b>[Repeated and Confirmed]</b></td><td>Upto 31 iu/l (Women)</td></tr>' : ''}
     `;
     refs.innerHTML = '';
   } else if (data.test_name === 'SGOT') {
@@ -1835,9 +1844,10 @@ function updatePreview() {
       let num = String(val).replace(/\s*i?u\/l\b/gi, '').trim();
       return num ? `${num} iu/l` : '?';
     };
+    const _hasRc2 = !!(data.result_note && String(data.result_note).trim() !== '');
     body.innerHTML = `
       <tr><td>SGOT</td><td><b>${formatLab(res)}</b></td><td>Upto 35 iu/l (Men)</td></tr>
-      <tr><td></td><td><b>[Repeated and Confirmed]</b></td><td>Upto 31 iu/l (Women)</td></tr>
+      ${_hasRc2 ? '<tr><td></td><td><b>[Repeated and Confirmed]</b></td><td>Upto 31 iu/l (Women)</td></tr>' : ''}
     `;
     refs.innerHTML = '';
   } else if (data.test_name === 'SGPT') {
@@ -1848,9 +1858,10 @@ function updatePreview() {
       let num = String(val).replace(/\s*i?u\/l\b/gi, '').trim();
       return num ? `${num} iu/l` : '?';
     };
+    const _hasRc3 = !!(data.result_note && String(data.result_note).trim() !== '');
     body.innerHTML = `
       <tr><td>SGPT</td><td><b>${formatLab(res)}</b></td><td>Upto 45 iu/l (Men)</td></tr>
-      <tr><td></td><td><b>[Repeated and Confirmed]</b></td><td>Upto 34 iu/l (Women)</td></tr>
+      ${_hasRc3 ? '<tr><td></td><td><b>[Repeated and Confirmed]</b></td><td>Upto 34 iu/l (Women)</td></tr>' : ''}
     `;
     refs.innerHTML = '';
   } else if (data.test_name === 'Total ? - HCG Concentration') {
@@ -2218,9 +2229,24 @@ $('#refSearch').onkeydown = e => {
   }
 };
 $('#test_name').onchange = updateTest;
-$('#test_result').oninput = () => debouncedUpdatePreview();
-$('#sgpt_result')?.addEventListener('input', () => debouncedUpdatePreview());
-$('#sgot_result')?.addEventListener('input', () => debouncedUpdatePreview());
+$('#test_result').oninput = () => { autoEvaluateRepeatedConfirmed(); debouncedUpdatePreview(); };
+$('#sgpt_result')?.addEventListener('input', () => { autoEvaluateRepeatedConfirmed(); debouncedUpdatePreview(); });
+$('#sgot_result')?.addEventListener('input', () => { autoEvaluateRepeatedConfirmed(); debouncedUpdatePreview(); });
+
+// Repeated & Confirmed checkbox — manual override tracking
+(function() {
+  const cb = document.getElementById('enable_repeated_confirmed');
+  if (cb) {
+    cb.addEventListener('change', () => {
+      isManualConfirmToggled = true;
+      const noteHidden = document.getElementById('result_note');
+      if (noteHidden) {
+        noteHidden.value = cb.checked ? '[Repeated and Confirmed]' : '';
+      }
+      debouncedUpdatePreview();
+    });
+  }
+})();
 
 // Patient detail fields — preview updates as user types (no search needed)
 ['[name="fname"]','[name="ref_no"]','[name="age"]','[name="gender"]','[name="passport_no"]','[name="medical_date"]'].forEach(sel => {
@@ -2814,17 +2840,55 @@ async function fetchSecurityStatus() {
 function applySecurityStatusToUI(status) {
   if (!status) return;
 
-  // 1. Emergency lockdown banner
+  // 1. Emergency lockdown banner & Login Screen lockdown
   const banner = $('#systemLockBanner');
   const bannerReason = $('#systemLockBannerReason');
   if (banner) {
     if (status.lockAllReports) {
       banner.hidden = false;
       if (bannerReason) {
-        bannerReason.textContent = status.lockReason || 'Report generation is temporarily restricted by Super Admin.';
+        bannerReason.textContent = status.lockReason || 'Report generation and logins are currently restricted by Super Admin.';
       }
     } else {
       banner.hidden = true;
+    }
+  }
+
+  // Update login screen if lockdown is active
+  const loginBtn = $('#loginBtn');
+  const loginBtnText = $('#loginBtnText');
+  let loginLockStrip = $('#loginLockdownAlert');
+
+  if (status.lockAllReports) {
+    if (loginBtn) {
+      loginBtn.disabled = true;
+      loginBtn.style.opacity = '0.6';
+      loginBtn.style.cursor = 'not-allowed';
+    }
+    if (loginBtnText) {
+      loginBtnText.textContent = '🔒 System Locked Down (Access Blocked)';
+    }
+    const loginForm = $('#loginForm');
+    if (!loginLockStrip && loginForm) {
+      loginLockStrip = document.createElement('div');
+      loginLockStrip.id = 'loginLockdownAlert';
+      loginLockStrip.style.cssText = 'background:#fef2f2; border:1.5px solid #ef4444; border-radius:10px; padding:12px 14px; margin-bottom:16px; color:#991b1b; font-size:12.5px; font-weight:600; display:flex; align-items:center; gap:10px;';
+      loginLockStrip.innerHTML = '<span style="font-size:18px;">🚨</span><div><div>SYSTEM LOCKDOWN ACTIVE</div><div style="font-size:11px; font-weight:400; color:#b91c1c; margin-top:2px;">System login is disabled by Administrator (' + (status.lockReason || 'Maintenance') + ').</div></div>';
+      loginForm.prepend(loginLockStrip);
+    } else if (loginLockStrip) {
+      loginLockStrip.style.display = 'flex';
+    }
+  } else {
+    if (loginBtn) {
+      loginBtn.disabled = false;
+      loginBtn.style.opacity = '1';
+      loginBtn.style.cursor = 'pointer';
+    }
+    if (loginBtnText) {
+      loginBtnText.textContent = `Sign In to ${getBranchMeta(currentBranch).label} Branch`;
+    }
+    if (loginLockStrip) {
+      loginLockStrip.style.display = 'none';
     }
   }
 

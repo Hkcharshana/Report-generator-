@@ -60,25 +60,356 @@ function showLoginView() {
 }
 
 // 2. Tab Navigation (Supports both data-pane and data-tab, switches active-pane)
+function switchTab(paneId) {
+  $$('.tab-btn').forEach(b => {
+    const match = (b.dataset.pane === paneId || b.dataset.tab === paneId);
+    b.classList.toggle('active', match);
+  });
+  $$('.tab-pane').forEach(p => {
+    const isTarget = (p.id === paneId);
+    p.classList.toggle('active', isTarget);
+    p.classList.toggle('active-pane', isTarget);
+    p.style.display = isTarget ? 'block' : 'none';
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+window.switchTab = switchTab;
+
 function setupTabs() {
   $$('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      $$('.tab-btn').forEach(b => b.classList.remove('active'));
-      $$('.tab-pane').forEach(p => {
-        p.classList.remove('active');
-        p.classList.remove('active-pane');
-        p.style.display = 'none';
-      });
-      btn.classList.add('active');
       const paneId = btn.dataset.pane || btn.dataset.tab;
-      const target = $(`#${paneId}`);
-      if (target) {
-        target.classList.add('active');
-        target.classList.add('active-pane');
-        target.style.display = 'block';
-      }
+      if (paneId) switchTab(paneId);
     });
   });
+
+  // Wire up Quick Laboratory Controls
+  $('#btnQuickManageTests')?.addEventListener('click', () => switchTab('paneTests'));
+  $('#btnQuickManagePackages')?.addEventListener('click', () => switchTab('panePackages'));
+  $('#btnQuickManageUsers')?.addEventListener('click', () => switchTab('paneUsers'));
+  $('#btnQuickChangePassword')?.addEventListener('click', () => switchTab('paneCredentials'));
+
+  // Wire up Topbar interactive pills
+  $('#systemStatusPill')?.addEventListener('click', () => switchTab('paneCredentials'));
+  $('#topbarTestsPill')?.addEventListener('click', () => switchTab('paneTests'));
+  $('#topbarPackagesPill')?.addEventListener('click', () => switchTab('panePackages'));
+}
+
+// ==========================================
+// LABORATORY PATIENT RECORDS & LOOKUPS
+// ==========================================
+let ticketsHistoryList = [];
+let filteredTicketsList = [];
+let ticketCurrentPage = 1;
+const ticketPageSize = 8;
+let currentTicketFilter = 'all';
+let currentTicketSearch = '';
+
+function setupTicketsDashboard() {
+  loadTicketsHistory();
+
+  // Search input debounced
+  let searchTimer = null;
+  $('#ticketsSearchInput')?.addEventListener('input', e => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      currentTicketSearch = (e.target.value || '').trim().toLowerCase();
+      ticketCurrentPage = 1;
+      applyTicketsFilters();
+    }, 200);
+  });
+
+  // Filter dropdown toggle & items
+  const filterPill = $('#filterTestTypePill');
+  const filterMenu = $('#filterDropdownMenu');
+  const filterLabel = $('#filterTestTypeLabel');
+
+  filterPill?.addEventListener('click', e => {
+    e.stopPropagation();
+    if (filterMenu) {
+      filterMenu.style.display = filterMenu.style.display === 'block' ? 'none' : 'block';
+    }
+  });
+
+  document.addEventListener('click', e => {
+    if (filterMenu && !filterPill?.contains(e.target)) {
+      filterMenu.style.display = 'none';
+    }
+  });
+
+  $$('#filterDropdownMenu .filter-opt-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const filterVal = item.dataset.filter || 'all';
+      currentTicketFilter = filterVal;
+      if (filterLabel) filterLabel.textContent = `Filter: ${item.textContent.trim()}`;
+      if (filterMenu) filterMenu.style.display = 'none';
+      ticketCurrentPage = 1;
+      applyTicketsFilters();
+    });
+  });
+
+  // Refresh records
+  $('#btnRefreshTickets')?.addEventListener('click', async () => {
+    await loadTicketsHistory();
+    showToast('Patient records updated');
+  });
+
+  // Export CSV
+  $('#btnExportTickets')?.addEventListener('click', () => {
+    exportTicketsToCSV(filteredTicketsList.length > 0 ? filteredTicketsList : ticketsHistoryList);
+  });
+
+  // Pagination prev/next
+  $('#btnPagePrev')?.addEventListener('click', () => {
+    if (ticketCurrentPage > 1) {
+      ticketCurrentPage--;
+      renderTicketsTable(filteredTicketsList);
+    }
+  });
+
+  $('#btnPageNext')?.addEventListener('click', () => {
+    const maxPage = Math.ceil(filteredTicketsList.length / ticketPageSize) || 1;
+    if (ticketCurrentPage < maxPage) {
+      ticketCurrentPage++;
+      renderTicketsTable(filteredTicketsList);
+    }
+  });
+
+  // Modal close handlers
+  $('#closeRecordModalBtn')?.addEventListener('click', () => {
+    const m = $('#recordDetailModal');
+    if (m) m.style.display = 'none';
+  });
+  $('#modalCloseActionBtn')?.addEventListener('click', () => {
+    const m = $('#recordDetailModal');
+    if (m) m.style.display = 'none';
+  });
+  $('#recordDetailModal')?.addEventListener('click', e => {
+    if (e.target.id === 'recordDetailModal') {
+      e.target.style.display = 'none';
+    }
+  });
+}
+
+async function loadTicketsHistory() {
+  try {
+    const res = await fetch('/api/reports/history');
+    if (!res.ok) return;
+    const data = await res.json();
+    ticketsHistoryList = data.records || [];
+
+    // Update KPI card counters
+    const kpiReports = $('#kpiTotalReports');
+    if (kpiReports) {
+      kpiReports.textContent = (1200 + ticketsHistoryList.length).toLocaleString() + '+';
+    }
+    const kpiPatients = $('#kpiTotalPatients');
+    if (kpiPatients) {
+      kpiPatients.textContent = (data.totalPatients || 960).toLocaleString() + '+';
+    }
+
+    applyTicketsFilters();
+  } catch (err) {
+    console.error('Failed to load tickets history:', err);
+  }
+}
+
+function applyTicketsFilters() {
+  let list = ticketsHistoryList;
+
+  // Filter by category / test
+  if (currentTicketFilter && currentTicketFilter !== 'all') {
+    list = list.filter(r => (r.specimen || '').toLowerCase().includes(currentTicketFilter));
+  }
+
+  // Filter by search query
+  if (currentTicketSearch) {
+    const q = currentTicketSearch;
+    list = list.filter(r =>
+      (r.ref && r.ref.toLowerCase().includes(q)) ||
+      (r.patientName && r.patientName.toLowerCase().includes(q)) ||
+      (r.passport && r.passport.toLowerCase().includes(q)) ||
+      (r.agency && r.agency.toLowerCase().includes(q)) ||
+      (r.generatedBy && r.generatedBy.toLowerCase().includes(q)) ||
+      (r.specimen && r.specimen.toLowerCase().includes(q))
+    );
+  }
+
+  filteredTicketsList = list;
+  renderTicketsTable(filteredTicketsList);
+}
+
+function renderTicketsTable(records) {
+  const tbody = $('#ticketsTableBody');
+  const summary = $('#ticketsPaginationSummary');
+  const pagesWrap = $('#pageNumbersWrap');
+  if (!tbody) return;
+
+  if (!records || records.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:36px; color:#94a3b8; font-style:italic;">No patient report records found matching your search.</td></tr>`;
+    if (summary) summary.textContent = 'Showing 0 records';
+    if (pagesWrap) pagesWrap.innerHTML = '<button class="page-btn active" data-page="1">1</button>';
+    return;
+  }
+
+  const total = records.length;
+  const maxPage = Math.ceil(total / ticketPageSize) || 1;
+  if (ticketCurrentPage > maxPage) ticketCurrentPage = maxPage;
+
+  const startIdx = (ticketCurrentPage - 1) * ticketPageSize;
+  const endIdx = Math.min(startIdx + ticketPageSize, total);
+  const pageItems = records.slice(startIdx, endIdx);
+
+  tbody.innerHTML = pageItems.map(r => {
+    const initial = (r.generatedBy || 'C').charAt(0).toUpperCase();
+    const format = r.format || 'PDF';
+    const formatClass = format === 'PDF' ? 'badge-red' : (format === 'Excel' ? 'badge-green' : 'badge-teal');
+
+    return `
+      <tr data-record-id="${escapeHtml(r.id)}" style="cursor:pointer;" title="Click to view full report record details">
+        <td class="td-booking-id">${escapeHtml(r.ref || '0000')}</td>
+        <td class="td-name"><strong>${escapeHtml(r.patientName || 'Patient Record')}</strong></td>
+        <td><span style="font-family:monospace; font-size:12px; background:#f1f5f9; padding:2px 7px; border-radius:4px; color:#334155;">${escapeHtml(r.passport || '-')}</span></td>
+        <td style="max-width:220px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${escapeHtml(r.agency || '-')}">${escapeHtml(r.agency || '-')}</td>
+        <td style="white-space:nowrap; color:#64748b; font-size:12.5px;">${escapeHtml(r.date || '-')}</td>
+        <td>
+          <span style="font-weight:600; color:#0f172a;">${escapeHtml(r.specimen || 'General Test')}</span>
+          <span class="badge ${formatClass}" style="margin-left:6px; font-size:10px; padding:1px 6px;">${escapeHtml(format)}</span>
+        </td>
+        <td>
+          <div style="display:inline-flex; align-items:center; gap:6px; background:#f3e8ff; border:1px solid #e9d5ff; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:600; color:#7e22ce;">
+            <span style="width:18px; height:18px; border-radius:50%; background:#9333ea; color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:10px; font-weight:700;">${initial}</span>
+            <span>${escapeHtml(r.generatedBy || 'Chathura (Super Admin)')}</span>
+          </div>
+        </td>
+        <td>
+          <span class="status-pill-minted"><span class="status-dot-green"></span>${escapeHtml(r.status || 'Verified')}</span>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  // Row click event -> open detail modal
+  tbody.querySelectorAll('tr[data-record-id]').forEach(row => {
+    row.addEventListener('click', () => {
+      const id = row.getAttribute('data-record-id');
+      const rec = records.find(x => x.id === id);
+      if (rec) openRecordDetailModal(rec);
+    });
+  });
+
+  // Update summary
+  if (summary) {
+    summary.textContent = `Showing ${startIdx + 1} to ${endIdx} of ${total} generated patient reports`;
+  }
+
+  // Update pagination controls
+  if (pagesWrap) {
+    let pagesHtml = '';
+    for (let p = 1; p <= maxPage; p++) {
+      if (p === 1 || p === maxPage || (p >= ticketCurrentPage - 1 && p <= ticketCurrentPage + 1)) {
+        pagesHtml += `<button class="page-btn ${p === ticketCurrentPage ? 'active' : ''}" data-page="${p}">${p}</button>`;
+      } else if (p === ticketCurrentPage - 2 || p === ticketCurrentPage + 2) {
+        pagesHtml += `<span style="color:#94a3b8; padding:0 3px;">...</span>`;
+      }
+    }
+    pagesWrap.innerHTML = pagesHtml;
+    pagesWrap.querySelectorAll('.page-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        ticketCurrentPage = parseInt(btn.dataset.page, 10) || 1;
+        renderTicketsTable(filteredTicketsList);
+      });
+    });
+  }
+
+  // Prev / Next button state
+  const prevBtn = $('#btnPagePrev');
+  const nextBtn = $('#btnPageNext');
+  if (prevBtn) prevBtn.disabled = (ticketCurrentPage <= 1);
+  if (nextBtn) nextBtn.disabled = (ticketCurrentPage >= maxPage);
+}
+
+function openRecordDetailModal(rec) {
+  const modal = $('#recordDetailModal');
+  const pName = $('#modalPatientName');
+  const body = $('#modalDetailsBody');
+  if (!modal || !body) return;
+
+  if (pName) pName.textContent = rec.patientName || 'Patient Record';
+
+  body.innerHTML = `
+    <div>
+      <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;">Reference Number</div>
+      <div style="font-size:15px; font-weight:700; color:#0f766e; margin-top:2px;">${escapeHtml(rec.ref)}</div>
+    </div>
+    <div>
+      <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;">Passport / NIC</div>
+      <div style="font-size:14px; font-weight:600; color:#0f172a; margin-top:2px; font-family:monospace;">${escapeHtml(rec.passport)}</div>
+    </div>
+    <div>
+      <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;">Medical Test / Specimen</div>
+      <div style="font-size:13.5px; font-weight:600; color:#0f172a; margin-top:2px;">${escapeHtml(rec.specimen)}</div>
+    </div>
+    <div>
+      <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;">Export Format</div>
+      <div style="margin-top:2px;"><span class="badge ${rec.format === 'PDF' ? 'badge-red' : (rec.format === 'Excel' ? 'badge-green' : 'badge-teal')}">${escapeHtml(rec.format || 'PDF')}</span></div>
+    </div>
+    <div style="grid-column: 1 / -1;">
+      <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;">Agency / Corporate Client</div>
+      <div style="font-size:13.5px; color:#334155; margin-top:2px;">${escapeHtml(rec.agency)}</div>
+    </div>
+    <div>
+      <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;">Generated By (Logged User)</div>
+      <div style="margin-top:4px;">
+        <span style="display:inline-flex; align-items:center; gap:6px; background:#f3e8ff; border:1px solid #e9d5ff; padding:3px 10px; border-radius:20px; font-size:12px; font-weight:700; color:#7e22ce;">
+          👤 ${escapeHtml(rec.generatedBy || 'Chathura')}
+        </span>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;">Generated Date &amp; Time</div>
+      <div style="font-size:12.5px; color:#334155; margin-top:2px;">${escapeHtml(rec.date)}</div>
+    </div>
+    <div style="grid-column: 1 / -1;">
+      <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;">Status &amp; Verification</div>
+      <div style="margin-top:4px;">
+        <span class="status-pill-minted"><span class="status-dot-green"></span>${escapeHtml(rec.status || 'Verified')} - Authenticated Laboratory Report</span>
+      </div>
+    </div>
+  `;
+
+  modal.style.display = 'flex';
+}
+
+function exportTicketsToCSV(records) {
+  if (!records || records.length === 0) {
+    showToast('No records to export', true);
+    return;
+  }
+  const headers = ['Ref No', 'Patient Name', 'Passport / NIC', 'Agency', 'Date', 'Specimen / Test', 'Format', 'Generated By', 'Branch', 'Status'];
+  const rows = records.map(r => [
+    `"${(r.ref || '').replace(/"/g, '""')}"`,
+    `"${(r.patientName || '').replace(/"/g, '""')}"`,
+    `"${(r.passport || '').replace(/"/g, '""')}"`,
+    `"${(r.agency || '').replace(/"/g, '""')}"`,
+    `"${(r.date || '').replace(/"/g, '""')}"`,
+    `"${(r.specimen || '').replace(/"/g, '""')}"`,
+    `"${(r.format || '').replace(/"/g, '""')}"`,
+    `"${(r.generatedBy || '').replace(/"/g, '""')}"`,
+    `"${(r.branch || '').replace(/"/g, '""')}"`,
+    `"${(r.status || '').replace(/"/g, '""')}"`
+  ]);
+  const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `neosys_patient_reports_history_${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Patient report history exported to CSV successfully');
 }
 
 // 3. Login Form Submit
@@ -207,6 +538,15 @@ function renderDashboard(config) {
   if (pillText) {
     pillText.textContent = isLocked ? 'Lockdown Active' : 'System Live';
   }
+  const dot = $('#systemStatusDot');
+  if (pill) {
+    pill.style.background = isLocked ? '#fef2f2' : '#f0fdf4';
+    pill.style.borderColor = isLocked ? '#fecaca' : '#bbf7d0';
+    pill.style.color = isLocked ? '#991b1b' : '#166534';
+  }
+  if (dot) {
+    dot.style.background = isLocked ? '#ef4444' : '#22c55e';
+  }
 
   // 5.2 Test Permissions Matrix
   renderTestPermissions(config.testPermissions || {});
@@ -255,6 +595,8 @@ function renderTestPermissions(permissions) {
   if (countBadge) countBadge.textContent = `${active} / ${total} Active`;
   const statTests = $('#statTotalTests');
   if (statTests) statTests.textContent = `${active} / ${total}`;
+  const cardActive = $('#statActiveTestsCard');
+  if (cardActive) cardActive.textContent = String(active);
 
   let html = '';
   Object.keys(categories).sort().forEach(cat => {
@@ -293,6 +635,7 @@ function renderTestPermissions(permissions) {
       const act = container.querySelectorAll('.perm-test-toggle:checked');
       if (countBadge) countBadge.textContent = `${act.length} / ${all.length} Active`;
       if (statTests) statTests.textContent = `${act.length} / ${all.length}`;
+      if ($('#statActiveTestsCard')) $('#statActiveTestsCard').textContent = String(act.length);
       saveSecurityPolicy(true);
     });
   });
@@ -304,6 +647,7 @@ $('#enableAllTestsBtn')?.addEventListener('click', () => {
   const all = $$('#categorizedTestsGrid .perm-test-toggle').length;
   if ($('#testsActiveCount')) $('#testsActiveCount').textContent = `${all} / ${all} Active`;
   if ($('#statTotalTests')) $('#statTotalTests').textContent = `${all} / ${all}`;
+  if ($('#statActiveTestsCard')) $('#statActiveTestsCard').textContent = String(all);
   saveSecurityPolicy(true);
   showToast('All tests enabled');
 });
@@ -313,6 +657,7 @@ $('#disableAllTestsBtn')?.addEventListener('click', () => {
   const all = $$('#categorizedTestsGrid .perm-test-toggle').length;
   if ($('#testsActiveCount')) $('#testsActiveCount').textContent = `0 / ${all} Active`;
   if ($('#statTotalTests')) $('#statTotalTests').textContent = `0 / ${all}`;
+  if ($('#statActiveTestsCard')) $('#statActiveTestsCard').textContent = '0';
   saveSecurityPolicy(true);
   showToast('All tests disabled', true);
 });
@@ -326,6 +671,7 @@ $('#lockdownToggle')?.addEventListener('change', e => {
   const reasonWrap = $('#lockReasonWrap');
   const pill = $('#systemStatusPill');
   const pillText = $('#systemStatusText');
+  const dot = $('#systemStatusDot');
 
   if (banner) banner.className = isLocked ? 'lockdown-banner active' : 'lockdown-banner';
   if (lockTitle) {
@@ -337,10 +683,16 @@ $('#lockdownToggle')?.addEventListener('change', e => {
     lockBadge.textContent = isLocked ? 'LOCKDOWN ACTIVE' : 'ALL SYSTEMS LIVE';
   }
   if (reasonWrap) reasonWrap.style.display = isLocked ? 'block' : 'none';
-  if (pill) pill.className = isLocked ? 'status-pill locked' : 'status-pill normal';
+  if (pill) {
+    pill.className = isLocked ? 'topbar-pill status-pill locked' : 'topbar-pill status-pill normal';
+    pill.style.background = isLocked ? '#fef2f2' : '#f0fdf4';
+    pill.style.borderColor = isLocked ? '#fecaca' : '#bbf7d0';
+    pill.style.color = isLocked ? '#991b1b' : '#166534';
+  }
+  if (dot) dot.style.background = isLocked ? '#ef4444' : '#22c55e';
   if (pillText) pillText.textContent = isLocked ? 'Lockdown Active' : 'System Live';
   saveSecurityPolicy(true);
-  showToast(isLocked ? 'Emergency System Lockdown Activated!' : 'System Lockdown Released');
+  showToast(isLocked ? 'Emergency System Lockdown Activated! (Logins Blocked)' : 'System Lockdown Released (Logins Allowed)');
 });
 
 $('#lockReasonInput')?.addEventListener('change', () => {
