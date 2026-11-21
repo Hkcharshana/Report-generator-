@@ -66,6 +66,19 @@ const ASSETS_DIR = process.env.ASSETS_DIR
 const app = express();
 app.use(express.json({ limit: '2mb' }));
 
+// Universal Cross-Origin Resource Sharing (CORS) & Private Network Access (PNA)
+// Enables seamless operation in Google Chrome, Microsoft Edge, Firefox, Opera, Brave, etc.
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Access-Control-Request-Private-Network, Cache-Control, Pragma');
+  res.setHeader('Access-Control-Allow-Private-Network', 'true');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(204);
+  }
+  next();
+});
+
 // Serve HTML files with no-cache and explicit UTF-8 charset
 app.use(express.static(FRONTEND_DIR, {
   setHeaders(res, filePath) {
@@ -2005,8 +2018,9 @@ app.get('/bridge.js', (req, res) => {
 
 app.use('/api/bridge', (req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Access-Control-Request-Private-Network');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Private-Network', 'true');
   if (req.method === 'OPTIONS') return res.sendStatus(204);
   next();
 });
@@ -7119,7 +7133,8 @@ app.post('/api/export/pdf', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 1516;
-app.listen(PORT, '0.0.0.0', () => console.log(`NeoSys Local Generator running at http://localhost:${PORT}`));
+// Bind to all interfaces (dual-stack IPv4/IPv6 on Windows) so Chrome connects without delay
+app.listen(PORT, () => console.log(`NeoSys Local Generator running at http://localhost:${PORT}`));
 
 
 

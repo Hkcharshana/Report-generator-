@@ -1,10 +1,10 @@
 (() => {
-  const APP = 'http://localhost:1516';
+  let APP = 'http://127.0.0.1:1516';
   if (window.__neosysBridgeRunning) { alert('NeoSys bridge is already running on this page.'); return; }
   window.__neosysBridgeRunning = true;
   const badge = document.createElement('div'); badge.id='__neosys_bridge_badge';
   Object.assign(badge.style,{position:'fixed',right:'18px',bottom:'18px',zIndex:2147483647,background:'#103b46',color:'#fff',padding:'10px 14px',borderRadius:'8px',font:'12px Arial',boxShadow:'0 4px 18px #0005'});
-  badge.textContent='NeoSys bridge connected'; document.body.appendChild(badge);
+  badge.textContent='NeoSys bridge connecting...'; document.body.appendChild(badge);
   const clean=v=>String(v??'').trim();
   const toRecord=p=>({
     ref_no: clean(p.ref_no),
@@ -65,8 +65,18 @@
   });
   async function tick(){
     try{
-      await fetch(`${APP}/api/bridge/heartbeat`,{method:'POST'});
-      const pending=await fetch(`${APP}/api/bridge/pending`,{cache:'no-store'}).then(r=>r.json());
+      let hbOk = false;
+      try {
+        await fetch(`${APP}/api/bridge/heartbeat`,{method:'POST',mode:'cors'});
+        hbOk = true;
+      } catch (hbErr) {
+        // Fallback between 127.0.0.1 and localhost for cross-browser IPv4/IPv6 support
+        APP = APP.includes('127.0.0.1') ? 'http://localhost:1516' : 'http://127.0.0.1:1516';
+        await fetch(`${APP}/api/bridge/heartbeat`,{method:'POST',mode:'cors'});
+        hbOk = true;
+      }
+      if (badge.textContent.includes('connecting')) badge.textContent = 'NeoSys bridge connected';
+      const pending=await fetch(`${APP}/api/bridge/pending`,{cache:'no-store',mode:'cors'}).then(r=>r.json());
       const ref=clean(pending.ref);
       if(!ref)return;
       badge.textContent=`NeoSys bridge: searching ${ref}...`;
@@ -77,7 +87,7 @@
       const selected=exact.length?exact:rows;
       const records=selected.map(toRecord).filter(p=>p.ref_no);
       if(!records.length)throw Error('Reference not found in NeoSys');
-      await fetch(`${APP}/api/bridge/push`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ref,records})});
+      await fetch(`${APP}/api/bridge/push`,{method:'POST',headers:{'Content-Type':'application/json'},mode:'cors',body:JSON.stringify({ref,records})});
       badge.textContent=`NeoSys bridge: ${records.length} result${records.length===1?'':'s'} loaded`;
       setTimeout(()=>badge.textContent='NeoSys bridge connected',2500);
     }catch(e){

@@ -2178,6 +2178,74 @@ function reportFileName(data, ext, isNoLetterhead = false) {
   return `${clean(data.ref_no)}_${clean(data.test_name || 'Laboratory-Test')}${suffix}.${ext}`;
 }
 
+function saveViaStandardDownload(blob, filename) {
+  const a = document.createElement('a');
+  a.style.display = 'none';
+  const url = URL.createObjectURL(blob);
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    try { document.body.removeChild(a); } catch {}
+    URL.revokeObjectURL(url);
+  }, 1000);
+  toast(filename + ' downloaded');
+  markReportAsPrinted();
+}
+
+function printReportBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  
+  // Hidden iframe print (universal for Google Chrome, Microsoft Edge, Mozilla Firefox)
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'fixed';
+  iframe.style.right = '0';
+  iframe.style.bottom = '0';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = '0';
+  iframe.src = url;
+  document.body.appendChild(iframe);
+  
+  let printed = false;
+  const tryPrint = () => {
+    if (printed) return;
+    try {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+      printed = true;
+      markReportAsPrinted();
+      toast('Print dialog opened');
+    } catch (e) {
+      console.warn('Direct iframe print restricted by browser:', e);
+    }
+  };
+
+  iframe.onload = () => {
+    setTimeout(tryPrint, 350);
+  };
+
+  // Fallback: If direct iframe print is restricted by browser sandbox, open new tab or download
+  setTimeout(() => {
+    if (!printed) {
+      const win = window.open(url, '_blank');
+      if (win) {
+        try { win.focus(); win.print(); } catch (e) {}
+        toast('Report opened in new tab. Press Ctrl+P to print.');
+      } else {
+        saveViaStandardDownload(blob, filename || 'Report-Plain.pdf');
+        toast('Report downloaded. Open PDF to print.');
+      }
+      markReportAsPrinted();
+    }
+    setTimeout(() => {
+      try { document.body.removeChild(iframe); } catch {}
+      URL.revokeObjectURL(url);
+    }, 120000);
+  }, 1200);
+}
+
 async function download(url, ext, extraData = {}) {
   const data = { ...collect(), ...extraData };
   if (!data.ref_no && !data.fname && !data.passport_no) {
@@ -2226,6 +2294,8 @@ async function download(url, ext, extraData = {}) {
     docx: { description: 'Word Document',        accept: { 'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'] } },
   };
 
+  let saved = false;
+  // If showSaveFilePicker is available (Edge/Chrome), attempt native Save As picker
   if (window.showSaveFilePicker) {
     try {
       const fileHandle = await window.showSaveFilePicker({
@@ -2237,22 +2307,20 @@ async function download(url, ext, extraData = {}) {
       await writable.close();
       toast(filename + ' saved');
       markReportAsPrinted();
+      saved = true;
     } catch (err) {
       if (err.name === 'AbortError') {
         toast('Save cancelled');
-      } else {
-        toast('Save failed: ' + err.message);
+        return;
       }
+      // If user gesture expired in Chrome or picker failed, gracefully fall back to standard download
+      console.warn('showSaveFilePicker failed or gesture expired in Chrome, falling back to standard download:', err.message);
     }
-  } else {
-    // Fallback: auto-download (older browsers)
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = filename;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 500);
-    toast(filename + ' downloaded');
-    markReportAsPrinted();
+  }
+
+  // Universal cross-browser download for Google Chrome, Edge, Firefox, Brave, Safari, Opera
+  if (!saved) {
+    saveViaStandardDownload(blob, filename);
   }
 }
 
@@ -2482,6 +2550,7 @@ $('#printPlainBtn').onclick = async () => {
     data.test_result = defaults[data.test_name] ? data.test_name : 'Negative';
   }
   try {
+    toast('Preparing print report...');
     const resp = await fetch('/api/export/pdf?letterhead=false', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2489,13 +2558,7 @@ $('#printPlainBtn').onclick = async () => {
     });
     if (!resp.ok) { const e = await resp.json(); toast('Error: ' + e.error); return; }
     const blob = await resp.blob();
-    const url = URL.createObjectURL(blob);
-    const win = window.open(url, '_blank');
-    if (win) {
-      win.onload = () => { win.focus(); win.print(); };
-      markReportAsPrinted();
-    } else { toast('Allow popups to use print'); }
-    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    printReportBlob(blob, reportFileName(data, 'pdf', true));
   } catch(e) { toast('Print failed: ' + e.message); }
 };
 $('#excelBtn').onclick = () => download('/api/export/excel', 'xlsx');
@@ -2506,7 +2569,18 @@ $('#clearAll').onclick = () => {
 $('#copyBridge')?.addEventListener('click', async () => {
   try {
     const script = await fetch('/bridge.js').then(r => r.text());
-    await navigator.clipboard.writeText(script);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(script);
+    } else {
+      const ta = document.createElement('textarea');
+      ta.value = script;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
     $('#copyStatus').textContent = 'Copied';
     setTimeout(() => $('#copyStatus').textContent = '', 2200);
   } catch (e) {
